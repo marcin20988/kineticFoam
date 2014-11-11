@@ -129,3 +129,6 @@
     Info<< "Creating field kinetic energy K\n" << endl;
     volScalarField K1(IOobject::groupName("K", phase1.name()), 0.5*magSqr(U1));
     volScalarField K2(IOobject::groupName("K", phase2.name()), 0.5*magSqr(U2));
+
+    Info << "Creating kinetic model class\n" << endl;
+    kineticModel KM(fluid);

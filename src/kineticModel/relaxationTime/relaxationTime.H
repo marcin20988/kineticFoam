@@ -22,19 +22,19 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::kineticModel
+    Foam::relaxationTime
 
 Description
 
 SourceFiles
-    kineticModelI.H
-    kineticModel.C
-    kineticModelIO.C
+    relaxationTimeI.H
+    relaxationTime.C
+    relaxationTimeIO.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef kineticModel_H
-#define kineticModel_H
+#ifndef relaxationTime_H
+#define relaxationTime_H
 
 #include "twoPhaseSystem.H"
 
@@ -42,72 +42,67 @@ SourceFiles
 
 namespace Foam
 {
+namespace kineticModel
+{
 
-  /*---------------------------------------------------------------------------*\
-    Class kineticModel Declaration
-    \*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*\
+                         Class relaxationTime Declaration
+\*---------------------------------------------------------------------------*/
 
-  class kineticModel
-  {
+class relaxationTime
+{
     // Private data
-    const twoPhaseSystem& fluid_;
 
-    //- Description of data_
+        //- Description of data_
 
 
     // Private Member Functions
 
-    //- Disallow default bitwise copy construct
-    kineticModel(const kineticModel&);
+        //- Disallow default bitwise copy construct
+        relaxationTime(const relaxationTime&);
 
-    //- Disallow default bitwise assignment
-    void operator=(const kineticModel&);
-
-
-    protected: 
-    const dictionary kineticModelDict_;
-    private:
-    const word continuousPhaseName_;
-    const word dispersedPhaseName_;
+        //- Disallow default bitwise assignment
+        void operator=(const relaxationTime&);
 
 
-    public:
+public:
 
     // Static data members
 
-    //- Static data staticData
+        //- Static data staticData
 
 
     // Constructors
 
-    kineticModel(const twoPhaseSystem& fluid);
+        //- Construct null
+        relaxationTime();
 
-    //- Construct from components
+        //- Construct from components
 
-    //- Construct from Istream
+        //- Construct from Istream
 
-    //- Construct as copy
+        //- Construct as copy
 
 
     // Selectors
 
-    //- Select null constructed
-    static autoPtr<kineticModel> New();
+        //- Select null constructed
+        static autoPtr<relaxationTime> New();
 
 
     //- Destructor
-    ~kineticModel(){};
+    ~relaxationTime();
 
 
     // Member Functions
 
-    // Access
+        // Access
 
-    // Check
+        // Check
 
-    // Edit
+        // Edit
 
-    // Write
+        // Write
 
 
     // Member Operators
@@ -118,11 +113,12 @@ namespace Foam
 
     // IOstream Operators
 
-  };
+};
 
 
-  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace kineticModel
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

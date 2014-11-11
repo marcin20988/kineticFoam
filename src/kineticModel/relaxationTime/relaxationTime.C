@@ -23,8 +23,12 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "kineticModel.H"
+#include "relaxationTime.H"
 
+namespace Foam
+{
+namespace kineticModel
+{
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 
@@ -39,35 +43,18 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::kineticModel::kineticModel(const twoPhaseSystem& fluid):
-  fluid_(fluid),
-  kineticModelDict_
-  (
-   IOdictionary
-   (
-    IOobject
-    (
-     "kineticModelProperties",
-     fluid_.mesh().time().constant(),
-     fluid_.mesh(),
-     IOobject::MUST_READ_IF_MODIFIED,
-     IOobject::NO_WRITE
-    )
-   )
-  ),
-  continuousPhaseName_(kineticModelDict_.lookup("continuousPhase")),
-  dispersedPhaseName_(kineticModelDict_.lookup("dispersedPhase"))
+relaxationTime::relaxationTime()
 {}
 
 
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
-//Foam::autoPtr<Foam::kineticModel>
-//Foam::kineticModel::New()
-//{
-    //return autoPtr<kineticModel>(new kineticModel);
-//}
+autoPtr<relaxationTime>
+relaxationTime::New()
+{
+    return autoPtr<relaxationTime>(new relaxationTime);
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -78,12 +65,12 @@ Foam::kineticModel::kineticModel(const twoPhaseSystem& fluid):
 
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
-void Foam::kineticModel::operator=(const kineticModel& rhs)
+void relaxationTime::operator=(const relaxationTime& rhs)
 {
     // Check for assignment to self
     if (this == &rhs)
     {
-        FatalErrorIn("Foam::kineticModel::operator=(const Foam::kineticModel&)")
+        FatalErrorIn("Foam::kineticModel::relaxationTime::operator=(const Foam::kineticModel::relaxationTime&)")
             << "Attempted assignment to self"
             << abort(FatalError);
     }
@@ -95,4 +82,6 @@ void Foam::kineticModel::operator=(const kineticModel& rhs)
 // * * * * * * * * * * * * * * Friend Operators * * * * * * * * * * * * * * //
 
 
+} // end namespace kineticModel
+} // end namespace Foam
 // ************************************************************************* //

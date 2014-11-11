@@ -1,5 +1,6 @@
 file(GLOB lib_source_files
   kineticModel.C
+  relaxationTime/*.C
 )
 
 add_library(kineticModel SHARED ${lib_source_files})
