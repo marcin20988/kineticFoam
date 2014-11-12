@@ -76,6 +76,9 @@ int main(int argc, char *argv[])
             rho = fluid.rho();
             fluid.correct();
 
+	    // update kinetic model
+	    KM.update();
+
             #include "EEqns.H"
             #include "UEqns.H"
 

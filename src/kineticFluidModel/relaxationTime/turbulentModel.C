@@ -72,7 +72,7 @@ turbulentModel::turbulentModel
 
 tmp<volScalarField> turbulentModel::field() const
 {
-  volScalarField nu = dispersedPhase_.nu() + dispersedPhase_.turbulence().nuEff();
+  volScalarField nu = /*dispersedPhase_.nu() + */ dispersedPhase_.turbulence().nuEff();
   volScalarField k =  dispersedPhase_.turbulence().k();
   volScalarField epsilon =  dispersedPhase_.turbulence().epsilon();
 

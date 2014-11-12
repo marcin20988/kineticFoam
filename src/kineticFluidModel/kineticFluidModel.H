@@ -104,6 +104,8 @@ namespace Foam
     // Member Functions
     const phaseModel& dispersedPhase() const;
 
+    void update();
+
     // Access
 
     // Check

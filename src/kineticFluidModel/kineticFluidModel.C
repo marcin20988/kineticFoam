@@ -119,6 +119,14 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
     }
 }
 
+void kineticFluidModel::update()
+{
+  volScalarField tau = tau_ -> field();
+
+  Info << "Collisional relaxation time: " << tau.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(tau).value()
+    <<" max: " << max(tau).value() << endl;
+};
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
 
