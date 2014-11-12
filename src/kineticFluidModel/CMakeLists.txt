@@ -10,6 +10,7 @@ include_directories ("./relaxationTime/")
 
 #components of twoPhaseSystem
 include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/twoPhaseSystem/lnInclude")
+include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/phaseIncompressibleTurbulenceModels/lnInclude")
 
 #openfoam includes
 include_directories ("$ENV{FOAM_SRC}/finiteVolume/lnInclude")

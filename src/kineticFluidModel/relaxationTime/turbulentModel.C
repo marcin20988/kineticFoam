@@ -25,6 +25,7 @@ License
 
 #include "turbulentModel.H"
 #include "addToRunTimeSelectionTable.H"
+#include "PhaseIncompressibleTurbulenceModel.H"
 
 namespace Foam
 {
@@ -68,16 +69,15 @@ turbulentModel::turbulentModel
 
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
-/*void relaxationTime::operator=(const relaxationTime& rhs)*/
-//{
-    //// Check for assignment to self
-    //if (this == &rhs)
-    //{
-        //FatalErrorIn("Foam::kineticFluidModel::relaxationTime::operator=(const Foam::kineticFluidModel::relaxationTime&)")
-            //<< "Attempted assignment to self"
-            //<< abort(FatalError);
-    //}
-/*}*/
+
+tmp<volScalarField> turbulentModel::field() const
+{
+  volScalarField nu = dispersedPhase_.nu() + dispersedPhase_.turbulence().nuEff();
+  volScalarField k =  dispersedPhase_.turbulence().k();
+  volScalarField epsilon =  dispersedPhase_.turbulence().epsilon();
+
+  return 27.0 * nu * k / ( 8.0 * pow(k,2) - 81.0 * epsilon * nu);
+}
 
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 

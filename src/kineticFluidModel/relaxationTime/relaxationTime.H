@@ -124,6 +124,7 @@ public:
 
 
     // Member Functions
+    virtual tmp<volScalarField> field() const=0;
 
     // Access
 

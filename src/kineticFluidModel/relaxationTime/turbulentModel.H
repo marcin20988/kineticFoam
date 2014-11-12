@@ -106,6 +106,8 @@ public:
 
         // Access
 
+	tmp<volScalarField> field() const;
+
         // Check
 
         // Edit
