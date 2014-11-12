@@ -100,7 +100,7 @@ include_directories ("$ENV{FOAM_SRC}/finiteVolume/lnInclude")
 set_source_files_properties(filename.c PROPERTIES LANGUAGE CXX )
 
 #Library
-add_subdirectory(src/kineticModel)
+add_subdirectory(src/kineticFluidModel)
 
 #Solvers
 add_subdirectory(solvers/kineticFoam)

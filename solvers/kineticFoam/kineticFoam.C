@@ -36,7 +36,7 @@ Description
 #include "pimpleControl.H"
 #include "IOMRFZoneList.H"
 #include "fixedFluxPressureFvPatchScalarField.H"
-#include "kineticModel.H"
+#include "kineticFluidModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

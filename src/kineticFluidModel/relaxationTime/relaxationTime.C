@@ -27,8 +27,8 @@ License
 
 namespace Foam
 {
-namespace kineticModel
-{
+defineTypeNameAndDebug(relaxationTime, 0);
+defineRunTimeSelectionTable(relaxationTime, dictionary);
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 
@@ -43,21 +43,48 @@ namespace kineticModel
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-relaxationTime::relaxationTime()
-{}
-
-
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
 autoPtr<relaxationTime>
-relaxationTime::New()
+relaxationTime::New(const twoPhaseSystem& fluid, const dictionary kineticDict, const word dispersedPhaseName)
 {
-    return autoPtr<relaxationTime>(new relaxationTime);
+  word relaxationTimeType(kineticDict.lookup("relaxationTime"));
+  Info << "Selecting relaxation time model: " << relaxationTimeType << endl;
+  dictionaryConstructorTable::iterator cstrIter = 
+    dictionaryConstructorTablePtr_->find(relaxationTimeType);
+
+  if (cstrIter == dictionaryConstructorTablePtr_->end())
+  {
+    FatalErrorIn("relaxationTime::New")
+      << "Unknown relaxationTimeType type "
+      << relaxationTimeType << endl << endl
+      << "Valid relaxation time types are : " << endl
+      << dictionaryConstructorTablePtr_->sortedToc()
+      << exit(FatalError);
+  }
+  return cstrIter()
+    (
+     fluid,
+     kineticDict.subDict(relaxationTimeType+"RelaxationTime"),
+     dispersedPhaseName
+    );
+
 }
 
 
+relaxationTime::relaxationTime
+(
+ const twoPhaseSystem& fluid,
+ const dictionary kineticDict,
+ const word dispersedPhaseName
+)
+  //fluid_(fluid),
+  //dispersedPhaseName_(dispersedPhaseName)
+{
+};
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+relaxationTime::~relaxationTime(){};
 
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
@@ -70,7 +97,7 @@ void relaxationTime::operator=(const relaxationTime& rhs)
     // Check for assignment to self
     if (this == &rhs)
     {
-        FatalErrorIn("Foam::kineticModel::relaxationTime::operator=(const Foam::kineticModel::relaxationTime&)")
+        FatalErrorIn("Foam::kineticFluidModel::relaxationTime::operator=(const Foam::kineticFluidModel::relaxationTime&)")
             << "Attempted assignment to self"
             << abort(FatalError);
     }
@@ -82,6 +109,5 @@ void relaxationTime::operator=(const relaxationTime& rhs)
 // * * * * * * * * * * * * * * Friend Operators * * * * * * * * * * * * * * //
 
 
-} // end namespace kineticModel
 } // end namespace Foam
 // ************************************************************************* //

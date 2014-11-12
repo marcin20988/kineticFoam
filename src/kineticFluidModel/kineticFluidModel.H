@@ -22,21 +22,22 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::kineticModel
+    Foam::kineticFluidModel
 
 Description
 
 SourceFiles
-    kineticModelI.H
-    kineticModel.C
-    kineticModelIO.C
+    kineticFluidModelI.H
+    kineticFluidModel.C
+    kineticFluidModelIO.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef kineticModel_H
-#define kineticModel_H
+#ifndef kineticFluidModel_H
+#define kineticFluidModel_H
 
 #include "twoPhaseSystem.H"
+#include "relaxationTime.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,13 +45,14 @@ namespace Foam
 {
 
   /*---------------------------------------------------------------------------*\
-    Class kineticModel Declaration
+    Class kineticFluidModel Declaration
     \*---------------------------------------------------------------------------*/
 
-  class kineticModel
+  class kineticFluidModel
   {
     // Private data
     const twoPhaseSystem& fluid_;
+
 
     //- Description of data_
 
@@ -58,18 +60,18 @@ namespace Foam
     // Private Member Functions
 
     //- Disallow default bitwise copy construct
-    kineticModel(const kineticModel&);
+    kineticFluidModel(const kineticFluidModel&);
 
     //- Disallow default bitwise assignment
-    void operator=(const kineticModel&);
+    void operator=(const kineticFluidModel&);
 
 
     protected: 
-    const dictionary kineticModelDict_;
+    const dictionary kineticFluidModelDict_;
     private:
     const word continuousPhaseName_;
     const word dispersedPhaseName_;
-
+    autoPtr<relaxationTime> tau_;
 
     public:
 
@@ -80,7 +82,7 @@ namespace Foam
 
     // Constructors
 
-    kineticModel(const twoPhaseSystem& fluid);
+    kineticFluidModel(const twoPhaseSystem& fluid);
 
     //- Construct from components
 
@@ -92,11 +94,11 @@ namespace Foam
     // Selectors
 
     //- Select null constructed
-    static autoPtr<kineticModel> New();
+    static autoPtr<kineticFluidModel> New(const twoPhaseSystem& fluid);
 
 
     //- Destructor
-    ~kineticModel(){};
+    ~kineticFluidModel(){};
 
 
     // Member Functions

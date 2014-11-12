@@ -42,8 +42,6 @@ SourceFiles
 
 namespace Foam
 {
-namespace kineticModel
-{
 
 /*---------------------------------------------------------------------------*\
                          Class relaxationTime Declaration
@@ -52,6 +50,9 @@ namespace kineticModel
 class relaxationTime
 {
     // Private data
+  protected:
+    //const twoPhaseSystem fluid_;
+    //const word dispersedPhaseName_;
 
         //- Description of data_
 
@@ -73,11 +74,30 @@ public:
 
 
     // Constructors
+	TypeName("relaxationTime");
 
-        //- Construct null
-        relaxationTime();
+	declareRunTimeSelectionTable
+	  (
+	   autoPtr,
+	   relaxationTime,
+	   dictionary,
+	   (
+	    const twoPhaseSystem& fluid, 
+	    const dictionary kineticDict,
+	    const word dispersedPhaseName
+	   ),
+	   (fluid, kineticDict, dispersedPhaseName)
+	  );
 
-        //- Construct from components
+	//- Construct null
+	relaxationTime
+	  (
+	    const twoPhaseSystem& fluid,
+	    const dictionary kineticDict,
+	    const word dispersedPhaseName
+	  );
+
+	//- Construct from components
 
         //- Construct from Istream
 
@@ -87,16 +107,39 @@ public:
     // Selectors
 
         //- Select null constructed
-        static autoPtr<relaxationTime> New();
+	static autoPtr<relaxationTime> New
+	  (
+	    const twoPhaseSystem& fluid, 
+	    const dictionary kineticDict,
+	    const word dispersedPhaseName
+	  );
 
 
     //- Destructor
-    ~relaxationTime();
+    virtual ~relaxationTime();
 
 
     // Member Functions
 
-        // Access
+    // Access
+  //public:
+    //inline const phaseModel& dispersedPhase() const
+	//{
+	  //if(fluid_.phase1().name() == dispersedPhaseName_)
+	  //{
+	    //return fluid_.phase1();
+	  //}
+	  //else if(fluid_.phase2().name() == dispersedPhaseName_)
+	  //{
+	    //return fluid_.phase2();
+	  //}
+	  //else
+	  //{
+	    //FatalErrorIn("phaseModel::dispersedPhae")
+	      //<< "there is no phase: " << dispersedPhaseName_ << endl
+	      //<< exit(FatalError);
+	  //}
+	//};
 
         // Check
 
@@ -118,7 +161,6 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace kineticModel
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

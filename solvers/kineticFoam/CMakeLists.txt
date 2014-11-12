@@ -12,7 +12,8 @@ include_directories ("$ENV{FOAM_SRC}/TurbulenceModels/turbulenceModels/lnInclude
 include_directories ("$ENV{FOAM_SRC}/TurbulenceModels/incompressible/lnInclude")
 include_directories ("$ENV{FOAM_SRC}/TurbulenceModels/phaseIncompressible/lnInclude")
 
-include_directories ("${PROJECT_SOURCE_DIR}/src/kineticModel/")
+include_directories ("${PROJECT_SOURCE_DIR}/src/kineticFluidModel/")
+include_directories ("${PROJECT_SOURCE_DIR}/src/kineticFluidModel/relaxationTime/")
 
 
 
@@ -30,7 +31,6 @@ target_link_openfoam_libraries(kineticFoam
     phaseIncompressibleTurbulenceModels
     OpenFOAM)
 
-  #target_link_openfoam_userlib(kineticFoam kineticModel)
-  target_link_libraries(kineticFoam kineticModel)
+  target_link_libraries(kineticFoam kineticFluidModel)
 
 set_target_properties(kineticFoam PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$ENV{FOAM_USER_APPBIN}")
