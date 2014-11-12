@@ -51,8 +51,9 @@ class relaxationTime
 {
     // Private data
   protected:
-    //const twoPhaseSystem fluid_;
-    //const word dispersedPhaseName_;
+    const twoPhaseSystem& fluid_;
+    const word dispersedPhaseName_;
+    const phaseModel& dispersedPhase_;
 
         //- Description of data_
 
@@ -84,9 +85,10 @@ public:
 	   (
 	    const twoPhaseSystem& fluid, 
 	    const dictionary kineticDict,
-	    const word dispersedPhaseName
+	    const word dispersedPhaseName,
+	    const phaseModel& dispersedPhase
 	   ),
-	   (fluid, kineticDict, dispersedPhaseName)
+	   (fluid, kineticDict, dispersedPhaseName, dispersedPhase)
 	  );
 
 	//- Construct null
@@ -94,7 +96,8 @@ public:
 	  (
 	    const twoPhaseSystem& fluid,
 	    const dictionary kineticDict,
-	    const word dispersedPhaseName
+	    const word dispersedPhaseName,
+	    const phaseModel& dispersedPhase
 	  );
 
 	//- Construct from components
@@ -111,7 +114,8 @@ public:
 	  (
 	    const twoPhaseSystem& fluid, 
 	    const dictionary kineticDict,
-	    const word dispersedPhaseName
+	    const word dispersedPhaseName,
+	    const phaseModel& dispersedPhase
 	  );
 
 
@@ -122,24 +126,6 @@ public:
     // Member Functions
 
     // Access
-  //public:
-    //inline const phaseModel& dispersedPhase() const
-	//{
-	  //if(fluid_.phase1().name() == dispersedPhaseName_)
-	  //{
-	    //return fluid_.phase1();
-	  //}
-	  //else if(fluid_.phase2().name() == dispersedPhaseName_)
-	  //{
-	    //return fluid_.phase2();
-	  //}
-	  //else
-	  //{
-	    //FatalErrorIn("phaseModel::dispersedPhae")
-	      //<< "there is no phase: " << dispersedPhaseName_ << endl
-	      //<< exit(FatalError);
-	  //}
-	//};
 
         // Check
 

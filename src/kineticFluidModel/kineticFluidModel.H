@@ -102,6 +102,7 @@ namespace Foam
 
 
     // Member Functions
+    const phaseModel& dispersedPhase() const;
 
     // Access
 

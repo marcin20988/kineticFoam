@@ -82,7 +82,8 @@ public:
 	  (
 	    const twoPhaseSystem& fluid,
 	    const dictionary kineticDict,
-	    const word dispersedPhaseName
+	    const word dispersedPhaseName,
+	    const phaseModel& dispersedPhase
 	  );
 
 	//- Construct from components

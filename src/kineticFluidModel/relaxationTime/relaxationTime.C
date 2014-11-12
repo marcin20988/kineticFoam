@@ -47,7 +47,13 @@ defineRunTimeSelectionTable(relaxationTime, dictionary);
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
 autoPtr<relaxationTime>
-relaxationTime::New(const twoPhaseSystem& fluid, const dictionary kineticDict, const word dispersedPhaseName)
+relaxationTime::New
+(
+ const twoPhaseSystem& fluid,
+ const dictionary kineticDict,
+ const word dispersedPhaseName,
+ const phaseModel& dispersedPhase
+)
 {
   word relaxationTimeType(kineticDict.lookup("relaxationTime"));
   Info << "Selecting relaxation time model: " << relaxationTimeType << endl;
@@ -67,7 +73,8 @@ relaxationTime::New(const twoPhaseSystem& fluid, const dictionary kineticDict, c
     (
      fluid,
      kineticDict.subDict(relaxationTimeType+"RelaxationTime"),
-     dispersedPhaseName
+     dispersedPhaseName,
+     dispersedPhase
     );
 
 }
@@ -77,10 +84,12 @@ relaxationTime::relaxationTime
 (
  const twoPhaseSystem& fluid,
  const dictionary kineticDict,
- const word dispersedPhaseName
-)
-  //fluid_(fluid),
-  //dispersedPhaseName_(dispersedPhaseName)
+ const word dispersedPhaseName,
+ const phaseModel& dispersedPhase
+):
+  fluid_(fluid),
+  dispersedPhaseName_(dispersedPhaseName),
+  dispersedPhase_(dispersedPhase)
 {
 };
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

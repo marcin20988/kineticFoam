@@ -25,6 +25,8 @@ License
 
 #include "kineticFluidModel.H"
 
+namespace Foam
+{
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 
@@ -39,7 +41,7 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
+kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   fluid_(fluid),
   kineticFluidModelDict_
   (
@@ -63,7 +65,8 @@ Foam::kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    (
      fluid_,
      kineticFluidModelDict_,
-     dispersedPhaseName_
+     dispersedPhaseName_,
+     dispersedPhase()
    )
   )
 {}
@@ -72,8 +75,8 @@ Foam::kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::kineticFluidModel>
-Foam::kineticFluidModel::New(const twoPhaseSystem& fluid)
+autoPtr<kineticFluidModel>
+kineticFluidModel::New(const twoPhaseSystem& fluid)
 {
     return autoPtr<kineticFluidModel>(new kineticFluidModel(fluid));
 }
@@ -84,10 +87,28 @@ Foam::kineticFluidModel::New(const twoPhaseSystem& fluid)
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
+const phaseModel& kineticFluidModel::dispersedPhase() const
+{
+  if(fluid_.phase1().name() == dispersedPhaseName_)
+  {
+    return fluid_.phase1();
+  }
+  else if(fluid_.phase2().name() == dispersedPhaseName_)
+  {
+    return fluid_.phase2();
+  }
+  else
+  {
+    FatalErrorIn("phaseModel::dispersedPhae")
+      << "there is no phase: " << dispersedPhaseName_ << endl
+      << exit(FatalError);
+    return fluid_.phase2();
+  }
+};
 
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
-void Foam::kineticFluidModel::operator=(const kineticFluidModel& rhs)
+void kineticFluidModel::operator=(const kineticFluidModel& rhs)
 {
     // Check for assignment to self
     if (this == &rhs)
@@ -104,4 +125,5 @@ void Foam::kineticFluidModel::operator=(const kineticFluidModel& rhs)
 // * * * * * * * * * * * * * * Friend Operators * * * * * * * * * * * * * * //
 
 
+}// End namespace Foam
 // ************************************************************************* //

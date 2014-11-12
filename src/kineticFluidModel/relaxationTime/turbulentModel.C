@@ -53,9 +53,10 @@ turbulentModel::turbulentModel
 (
   const twoPhaseSystem& fluid,
   const dictionary kineticDict,
-  const word dispersedPhaseName
+  const word dispersedPhaseName,
+  const phaseModel& dispersedPhase
 ):
-  relaxationTime(fluid, kineticDict, dispersedPhaseName)
+  relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase)
 {
 };
 
