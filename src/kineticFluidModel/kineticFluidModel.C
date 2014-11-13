@@ -25,6 +25,7 @@ License
 
 #include "kineticFluidModel.H"
 
+
 namespace Foam
 {
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -43,6 +44,7 @@ namespace Foam
 
 kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   fluid_(fluid),
+  mesh_(fluid_.mesh()),
   kineticFluidModelDict_
   (
    IOdictionary
@@ -68,6 +70,45 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
      dispersedPhaseName_,
      dispersedPhase()
    )
+  ),
+  E1_
+  (
+   IOobject
+   (
+    "E1",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::AUTO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("E1", dimless, 0.0)
+  ),
+  E2_
+  (
+   IOobject
+   (
+    "E2",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::AUTO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("E2", pow(dimLength, -2) / pow(dimTime, -2), 0.0)
+  ),
+  a_
+  (
+   IOobject
+   (
+    "E2",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::AUTO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("a", pow(dimLength, -2) / pow(dimTime, -3), 0.0)
   )
 {}
 
@@ -121,12 +162,62 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
 
 void kineticFluidModel::update()
 {
+  volScalarField k =  dispersedPhase().turbulence().k();
+  volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
+
   volScalarField tau = tau_ -> field();
+  // in the derivation drag coefficient is taken in units of s^-1
+  // and is strictly negative
+  volScalarField cd = - fluid_.dragCoeff() / dispersedPhase().rho();
 
   Info << "Collisional relaxation time: " << tau.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(tau).value()
     <<" max: " << max(tau).value() << endl;
+  Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(cd).value()
+    <<" max: " << max(cd).value() << endl;
+
+  E1_ = (2.0 * k - 8 * tau * cd * k + 3.0 * tau * epsilon - 6.0 * cd * pow(tau, 2) * epsilon)
+    /
+    (16.0 * pow(cd, 2) * pow(tau, 2) * k - 12.0 * cd * tau * k + 2.0 * k);
+
+  E2_ = 3.0 * tau * epsilon / (4.0 * pow(k, 2) * (1.0 - 4.0 * tau * cd));
+  Info << "E1: " << E1_.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(E1_).value()
+    <<" max: " << max(E1_).value() << endl;
+  Info << "E2: " << E2_.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(E2_).value()
+    <<" max: " << max(E2_).value() << endl;
+  
+  a_ = - 2.0 * tau / (k *(1.0 - 6.0 * tau * cd));
+  Info << "a: " << a_.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(a_).value()
+    <<" max: " << max(a_).value() << endl;
 };
+
+
+tmp<volScalarField> kineticFluidModel::pressureCorrection() const
+{
+  volScalarField k =  dispersedPhase().turbulence().k();
+
+  return (E1_ + 10.0 / 3.0 * k * E2_) / (E1_ + 2.0 * k * E2_) - 1.0;
+};
+
+
+tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
+{
+    volScalarField k =  dispersedPhase().turbulence().k();
+
+    volScalarField correctedViscosity = 8.0 / 9.0 
+        * a_ * (1.0 / (E1_ + 2.0 * k * E2_)) * pow(k, 2);
+    correctedViscosity -= 2 * dispersedPhase().turbulence().nuEff();
+    correctedViscosity *= dispersedPhase().rho();
+    return
+        (
+            - fvm::laplacian(correctedViscosity, U)
+            - fvc::div(correctedViscosity*dev(T(fvc::grad(U))))
+        );
+}
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
 

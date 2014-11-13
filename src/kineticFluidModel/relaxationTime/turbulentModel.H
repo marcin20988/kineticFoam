@@ -54,6 +54,7 @@ class turbulentModel:
   public relaxationTime
 {
     // Private data
+    const dimensionedScalar minTau_;
 
         //- Description of data_
 

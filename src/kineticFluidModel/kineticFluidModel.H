@@ -38,6 +38,10 @@ SourceFiles
 
 #include "twoPhaseSystem.H"
 #include "relaxationTime.H"
+#include "PhaseIncompressibleTurbulenceModel.H"
+#include "fvm.H"
+#include "fvc.H"
+#include "fvMatrices.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,6 +56,7 @@ namespace Foam
   {
     // Private data
     const twoPhaseSystem& fluid_;
+    const fvMesh& mesh_;
 
 
     //- Description of data_
@@ -66,14 +71,18 @@ namespace Foam
     void operator=(const kineticFluidModel&);
 
 
-    protected: 
+  protected: 
     const dictionary kineticFluidModelDict_;
-    private:
+  private:
     const word continuousPhaseName_;
     const word dispersedPhaseName_;
     autoPtr<relaxationTime> tau_;
 
-    public:
+    volScalarField E1_;
+    volScalarField E2_;
+    volScalarField a_;
+
+  public:
 
     // Static data members
 
@@ -106,6 +115,9 @@ namespace Foam
 
     void update();
 
+    tmp<volScalarField> pressureCorrection() const;
+
+    tmp<fvVectorMatrix> divDevReff(const volVectorField& U);
     // Access
 
     // Check

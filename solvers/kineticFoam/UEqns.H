@@ -14,7 +14,30 @@ volScalarField dragCoeff(fluid.dragCoeff());
     volVectorField wallLubricationForce(fluid.wallLubricationForce());
     volVectorField turbulentDispersionForce(fluid.turbulentDispersionForce());
 
+    volScalarField pressureCorrFactor = KM.pressureCorrection();
+    Info << "pressure correction: " << pressureCorrFactor.weightedAverage(mesh.V()).value()
+      <<" min: " << min(pressureCorrFactor).value()
+      <<" max: " << max(pressureCorrFactor).value() << endl;
+
     {
+	
+	volScalarField X = pressureCorrFactor;
+	if(&alpha1 == &KM.dispersedPhase())
+	{
+	  Info << "correcting pressure in phase1 " << endl;
+	  Info << "phase name is" << phase1.name()
+	    <<" and dispersed phase name is " << KM.dispersedPhase().name() << endl;
+
+	  volVectorField dp = fvc::grad(p * X) / rho1;
+	  Info << "pressure correction: " << dp.weightedAverage(mesh.V()).value()
+	    <<" min: " << min(dp).value()
+	    <<" max: " << max(dp).value() << endl;
+
+	}else
+	{
+	  X = 0.0 * X;
+	}
+
         U1Eqn =
         (
             fvm::ddt(alpha1, U1)
@@ -42,12 +65,38 @@ volScalarField dragCoeff(fluid.dragCoeff());
     }
 
     {
+
+	volScalarField X = pressureCorrFactor;
+	if(&alpha2 == &KM.dispersedPhase())
+	{
+	  Info << "correcting pressure in phase 2" << endl;
+	  Info << "phase name is" << phase2.name()
+	    <<" and dispersed phase name is " << KM.dispersedPhase().name() << endl;
+	}else
+	{
+	  X = 0.0 * X;
+	}
+
+        //volVectorField dp = alpha2 * 2.0 / 3.0  * fvc::grad(phase2.turbulence().k() * X);
+	//volVectorField dp = alpha2 * X fvc::grad(X * 2.0 / 3.0 * phase2.turbulence().k());
+        volVectorField dp = X * fvc::grad(p) / rho2 
+            + 2.0 / 3.0 * phase2.turbulence().k() * fvc::grad(X);
+	Info << "pressure correction: " << dp.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(dp).value()
+	  <<" max: " << max(dp).value() << endl;
+
+	Info << "pressure correction: " << dp.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(dp).value()
+	  <<" max: " << max(dp).value() << endl;
+
         U2Eqn =
         (
             fvm::ddt(alpha2, U2)
           + fvm::div(alphaPhi2, U2)
+	  + dp * alpha2
           - fvm::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), U2)
           + phase2.turbulence().divDevReff(U2)
+          + KM.divDevReff(U2)
          ==
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2

@@ -57,7 +57,8 @@ turbulentModel::turbulentModel
   const word dispersedPhaseName,
   const phaseModel& dispersedPhase
 ):
-  relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase)
+  relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase),
+  minTau_("minTau", dimTime, kineticDict.lookup("minTau"))
 {
 };
 
@@ -76,7 +77,11 @@ tmp<volScalarField> turbulentModel::field() const
   volScalarField k =  dispersedPhase_.turbulence().k();
   volScalarField epsilon =  dispersedPhase_.turbulence().epsilon();
 
-  return 27.0 * nu * k / ( 8.0 * pow(k,2) - 81.0 * epsilon * nu);
+  return max
+    (
+      27.0 * nu * k / ( 8.0 * pow(k,2) - 81.0 * epsilon * nu)
+      , minTau_
+    );
 }
 
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
