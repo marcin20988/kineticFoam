@@ -73,13 +73,21 @@ turbulentModel::turbulentModel
 
 tmp<volScalarField> turbulentModel::field() const
 {
-  volScalarField nu = /*dispersedPhase_.nu() + */ dispersedPhase_.turbulence().nuEff();
+  volScalarField nu = dispersedPhase_.turbulence().nuEff();
+  volScalarField nut = dispersedPhase_.turbulence().nut() 
+      + dimensionedScalar("safeNu", nu.dimensions(), 1e-10);
   volScalarField k =  dispersedPhase_.turbulence().k();
-  volScalarField epsilon =  dispersedPhase_.turbulence().epsilon();
+  //volScalarField epsilon =  dispersedPhase_.turbulence().epsilon();
+
+  //volScalarField approximation = max(1.0, nut - nu);
+  //Info << "Approximation: " 
+    //<< approximation.weightedAverage(k.mesh().V()).value()
+    //<<" min: " << min(approximation).value()
+    //<<" max: " << max(approximation).value() << endl;
 
   return max
     (
-      27.0 * nu * k / ( 8.0 * pow(k,2) - 81.0 * epsilon * nu)
+      27.0 * nu / ( 8.0 * k)
       , minTau_
     );
 }
