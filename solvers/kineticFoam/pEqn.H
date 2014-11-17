@@ -3,7 +3,7 @@
     surfaceScalarField alpha2f("alpha2f", scalar(1) - alpha1f);
 
     rAU1 = 1.0/U1Eqn.A();
-    rAU2 = 1.0/U2Eqn.A();
+    rAU2 = KM.pressureCorrection() * 1.0/U2Eqn.A();
 
     surfaceScalarField rAlphaAU1f(fvc::interpolate(alpha1*rAU1));
     surfaceScalarField rAlphaAU2f(fvc::interpolate(alpha2*rAU2));

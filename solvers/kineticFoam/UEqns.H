@@ -44,6 +44,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi1, U1)
           - fvm::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), U1)
           + phase1.turbulence().divDevReff(U1)
+          + alpha1 * 2.0 / 3.0 * fvc::grad(phase1.turbulence().k())
          ==
           - fvm::Sp(dragCoeff/rho1, U1)
           - alpha1*alpha2/rho1

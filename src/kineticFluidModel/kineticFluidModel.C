@@ -208,7 +208,7 @@ tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 {
   volScalarField k =  dispersedPhase().turbulence().k();
 
-  return (E1_ + 10.0 / 3.0 * k * E2_) / (E1_ + 2.0 * k * E2_) - 1.0;
+  return (E1_ + 10.0 / 3.0 * k * E2_) / (E1_ + 2.0 * k * E2_);
 };
 
 
