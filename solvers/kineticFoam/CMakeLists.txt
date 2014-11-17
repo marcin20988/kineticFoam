@@ -4,6 +4,7 @@ add_executable(kineticFoam kineticFoam.C)
 include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/twoPhaseSystem/lnInclude")
 include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/interfacialModels/lnInclude")
 include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/phaseIncompressibleTurbulenceModels/lnInclude")
+include_directories ("$ENV{FOAM_SRC}/TurbulenceModels/phaseIncompressible/PhaseIncompressibleTurbulenceModel")
 # OF libraries
 include_directories ("$ENV{FOAM_SRC}/finiteVolume/lnInclude")
 include_directories ("$ENV{FOAM_SRC}/thermophysicalModels/basic/lnInclude")
