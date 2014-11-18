@@ -104,3 +104,4 @@ add_subdirectory(src/kineticFluidModel)
 
 #Solvers
 add_subdirectory(solvers/kineticFoam)
+add_subdirectory(utilities/kineticTheoryPostProc)

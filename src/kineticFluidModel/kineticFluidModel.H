@@ -117,6 +117,26 @@ namespace Foam
 
     tmp<volScalarField> pressureCorrection() const;
 
+    tmp<volScalarField> tau() const
+    {
+        return tau_ -> field();
+    }
+
+    tmp<volScalarField> E1() const
+    {
+        return E1_;
+    }
+
+    tmp<volScalarField> E2() const
+    {
+        return E2_;
+    }
+
+    tmp<volScalarField> a() const
+    {
+        return a_;
+    }
+
     tmp<fvVectorMatrix> divDevReff(const volVectorField& U);
     // Access
 
