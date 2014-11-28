@@ -37,6 +37,7 @@ SourceFiles
 #define relaxationTime_H
 
 #include "twoPhaseSystem.H"
+#include "../kineticFluidModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,6 +47,7 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                          Class relaxationTime Declaration
 \*---------------------------------------------------------------------------*/
+class kineticFluidModel;
 
 class relaxationTime
 {
@@ -54,6 +56,7 @@ class relaxationTime
     const twoPhaseSystem& fluid_;
     const word dispersedPhaseName_;
     const phaseModel& dispersedPhase_;
+    const kineticFluidModel& KM_;
 
         //- Description of data_
 
@@ -86,9 +89,10 @@ public:
 	    const twoPhaseSystem& fluid, 
 	    const dictionary kineticDict,
 	    const word dispersedPhaseName,
-	    const phaseModel& dispersedPhase
+	    const phaseModel& dispersedPhase,
+            const kineticFluidModel& KM
 	   ),
-	   (fluid, kineticDict, dispersedPhaseName, dispersedPhase)
+	   (fluid, kineticDict, dispersedPhaseName, dispersedPhase, KM)
 	  );
 
 	//- Construct null
@@ -97,7 +101,8 @@ public:
 	    const twoPhaseSystem& fluid,
 	    const dictionary kineticDict,
 	    const word dispersedPhaseName,
-	    const phaseModel& dispersedPhase
+	    const phaseModel& dispersedPhase,
+            const kineticFluidModel& KM
 	  );
 
 	//- Construct from components
@@ -115,7 +120,8 @@ public:
 	    const twoPhaseSystem& fluid, 
 	    const dictionary kineticDict,
 	    const word dispersedPhaseName,
-	    const phaseModel& dispersedPhase
+	    const phaseModel& dispersedPhase,
+            const kineticFluidModel& KM
 	  );
 
 

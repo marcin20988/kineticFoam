@@ -68,7 +68,8 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
      fluid_,
      kineticFluidModelDict_,
      dispersedPhaseName_,
-     dispersedPhase()
+     dispersedPhase(),
+     *this
    )
   ),
   E1_
@@ -236,6 +237,12 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
             - fvm::laplacian(correctedViscosity, U)
             - fvc::div(correctedViscosity*dev(T(fvc::grad(U))))
         );
+}
+
+
+tmp<volScalarField> kineticFluidModel::tau() const
+{
+    return tau_ -> field();
 }
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 

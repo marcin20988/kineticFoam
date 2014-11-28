@@ -52,7 +52,8 @@ relaxationTime::New
  const twoPhaseSystem& fluid,
  const dictionary kineticDict,
  const word dispersedPhaseName,
- const phaseModel& dispersedPhase
+ const phaseModel& dispersedPhase,
+ const kineticFluidModel& KM
 )
 {
   word relaxationTimeType(kineticDict.lookup("relaxationTime"));
@@ -74,7 +75,8 @@ relaxationTime::New
      fluid,
      kineticDict.subDict(relaxationTimeType+"RelaxationTime"),
      dispersedPhaseName,
-     dispersedPhase
+     dispersedPhase,
+     KM
     );
 
 }
@@ -85,11 +87,13 @@ relaxationTime::relaxationTime
  const twoPhaseSystem& fluid,
  const dictionary kineticDict,
  const word dispersedPhaseName,
- const phaseModel& dispersedPhase
+ const phaseModel& dispersedPhase,
+ const kineticFluidModel& KM
 ):
   fluid_(fluid),
   dispersedPhaseName_(dispersedPhaseName),
-  dispersedPhase_(dispersedPhase)
+  dispersedPhase_(dispersedPhase),
+  KM_(KM)
 {
 };
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

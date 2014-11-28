@@ -47,6 +47,7 @@ SourceFiles
 
 namespace Foam
 {
+  class relaxationTime;
 
   /*---------------------------------------------------------------------------*\
     Class kineticFluidModel Declaration
@@ -117,10 +118,7 @@ namespace Foam
 
     tmp<volScalarField> pressureCorrection() const;
 
-    tmp<volScalarField> tau() const
-    {
-        return tau_ -> field();
-    }
+    tmp<volScalarField> tau() const;
 
     tmp<volScalarField> E1() const
     {

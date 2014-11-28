@@ -55,9 +55,10 @@ turbulentModel::turbulentModel
   const twoPhaseSystem& fluid,
   const dictionary kineticDict,
   const word dispersedPhaseName,
-  const phaseModel& dispersedPhase
+  const phaseModel& dispersedPhase,
+  const kineticFluidModel& KM
 ):
-  relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase),
+  relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase, KM),
   minTau_("minTau", dimTime, kineticDict.lookup("minTau"))
 {
 };
