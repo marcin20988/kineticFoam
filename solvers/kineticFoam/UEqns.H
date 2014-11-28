@@ -14,6 +14,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
     volVectorField wallLubricationForce(fluid.wallLubricationForce());
     volVectorField turbulentDispersionForce(fluid.turbulentDispersionForce());
 
+    KM.update(KM.dispersedPhase().turbulence().k());
     volScalarField pressureCorrFactor = KM.pressureCorrection();
     Info << "pressure correction: " << pressureCorrFactor.weightedAverage(mesh.V()).value()
       <<" min: " << min(pressureCorrFactor).value()
@@ -89,7 +90,10 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	//	- g * (X - 1.0) * alpha2;
 
 	volScalarField p_mod = p / rho2 - g.component(2) * mesh.C().component(2);
+        KM.update(p_mod);
 	volVectorField dp2 = fvc::grad(alpha2 * p_mod * (X - 1.0)) ;
+
+        KM.update(KM.dispersedPhase().turbulence().k());
 
 	Info << "turbulent correction: " << dp.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(dp).value()

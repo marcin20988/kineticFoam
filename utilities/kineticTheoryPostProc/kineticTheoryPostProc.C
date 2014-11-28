@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     forAll(timeDirs, timeI)
     {
-      KM.update();
+      KM.update(KM.dispersedPhase().turbulence().k());
       runTime.setTime(timeDirs[timeI], timeI);
       volScalarField cd
       (

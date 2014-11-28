@@ -82,6 +82,7 @@ namespace Foam
     volScalarField E1_;
     volScalarField E2_;
     volScalarField a_;
+    volScalarField T_;
 
   public:
 
@@ -114,7 +115,7 @@ namespace Foam
     // Member Functions
     const phaseModel& dispersedPhase() const;
 
-    void update();
+    void update(const volScalarField& T);
 
     tmp<volScalarField> pressureCorrection() const;
 
@@ -133,6 +134,11 @@ namespace Foam
     tmp<volScalarField> a() const
     {
         return a_;
+    }
+
+    tmp<volScalarField> temp() const
+    {
+        return T_;
     }
 
     tmp<fvVectorMatrix> divDevReff(const volVectorField& U);

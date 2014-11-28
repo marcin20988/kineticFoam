@@ -110,6 +110,19 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    ),
    mesh_,
    dimensionedScalar("a", pow(dimLength, -2) / pow(dimTime, -3), 0.0)
+  ),
+  T_
+  (
+   IOobject
+   (
+    "kineticTemperature",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::AUTO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("a", pow(dimLength, 2) / pow(dimTime, 2), 0.0)
   )
 {}
 
@@ -161,9 +174,9 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
     }
 }
 
-void kineticFluidModel::update()
+void kineticFluidModel::update(const volScalarField& T)
 {
-  volScalarField k =  dispersedPhase().turbulence().k();
+  volScalarField k =  T;//dispersedPhase().turbulence().k();
   volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
 
   volScalarField tau = tau_ -> field();
@@ -207,7 +220,7 @@ void kineticFluidModel::update()
 
 tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 {
-  volScalarField k =  dispersedPhase().turbulence().k();
+  volScalarField k =  temp();//dispersedPhase().turbulence().k();
 
   return (1.0 + E1_ + 10.0 / 3.0 * k * E2_) / (1.0 + E1_ + 2.0 * k * E2_);
 };
@@ -215,7 +228,7 @@ tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 
 tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 {
-    volScalarField k =  dispersedPhase().turbulence().k();
+    volScalarField k =  temp();//dispersedPhase().turbulence().k();
 
     volScalarField correctedViscosity = 8.0 / 9.0 
         * a_ * (1.0 / (1.0 + E1_ + 2.0 * k * E2_)) * pow(k, 2);
