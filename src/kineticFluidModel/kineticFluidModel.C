@@ -209,7 +209,7 @@ tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 {
   volScalarField k =  dispersedPhase().turbulence().k();
 
-  return (E1_ + 10.0 / 3.0 * k * E2_) / (E1_ + 2.0 * k * E2_);
+  return (1.0 + E1_ + 10.0 / 3.0 * k * E2_) / (1.0 + E1_ + 2.0 * k * E2_);
 };
 
 
@@ -218,7 +218,7 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
     volScalarField k =  dispersedPhase().turbulence().k();
 
     volScalarField correctedViscosity = 8.0 / 9.0 
-        * a_ * (1.0 / (E1_ + 2.0 * k * E2_)) * pow(k, 2);
+        * a_ * (1.0 / (1.0 + E1_ + 2.0 * k * E2_)) * pow(k, 2);
     
     volScalarField ratio = 0.5 * correctedViscosity 
         / dispersedPhase().turbulence().nuEff();
