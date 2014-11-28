@@ -8,21 +8,23 @@ fvVectorMatrix U2Eqn(U2, U2.dimensions()*dimVol/dimTime);
 volScalarField dragCoeff(fluid.dragCoeff());
 
 {
+
+
     volScalarField virtualMassCoeff(fluid.virtualMassCoeff());
 
     volVectorField liftForce(fluid.liftForce());
     volVectorField wallLubricationForce(fluid.wallLubricationForce());
     volVectorField turbulentDispersionForce(fluid.turbulentDispersionForce());
 
-    KM.update(KM.dispersedPhase().turbulence().k());
+    /*KM.update(k);
     volScalarField pressureCorrFactor = KM.pressureCorrection();
     Info << "pressure correction: " << pressureCorrFactor.weightedAverage(mesh.V()).value()
       <<" min: " << min(pressureCorrFactor).value()
-      <<" max: " << max(pressureCorrFactor).value() << endl;
+      <<" max: " << max(pressureCorrFactor).value() << endl;*/
 
     {
 	
-	volScalarField X = pressureCorrFactor;
+	/*volScalarField X = pressureCorrFactor;
 	if(&alpha1 == &KM.dispersedPhase())
 	{
 	  Info << "correcting pressure in phase1 " << endl;
@@ -37,7 +39,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	}else
 	{
 	  X = 0.0 * X;
-	}
+	}*/
 
         U1Eqn =
         (
@@ -68,7 +70,8 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
     {
 
-	volScalarField X = pressureCorrFactor;
+        volScalarField k = KM.dispersedPhase().turbulence().k();
+	/*volScalarField X = pressureCorrFactor;
 	if(&alpha2 == &KM.dispersedPhase())
 	{
 	  Info << "correcting pressure in phase 2" << endl;
@@ -77,24 +80,27 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	}else
 	{
 	  X = 0.0 * X;
-	}
-
-        //volVectorField dp = alpha2 * 2.0 / 3.0  * fvc::grad(phase2.turbulence().k() * X);
-	//volVectorField dp = alpha2 * X fvc::grad(X * 2.0 / 3.0 * phase2.turbulence().k());
-        //volVectorField dp = X * fvc::grad(p) / rho2 
-            //+ 2.0 / 3.0 * phase2.turbulence().k() * fvc::grad(X);
-        volVectorField dp = 2.0 / 3.0 * fvc::grad(phase2.turbulence().k() * X * alpha2);
-	//volVectorField dp2 = alpha2 * ((fvc::grad(p / rho) - g) * (X - 1.0));
-
-	//volVectorField dp2 = fvc::grad(alpha2 * p / rho2 * (X - 1.0)) 
-	//	- g * (X - 1.0) * alpha2;
-
+	}*/
 	volScalarField p_mod = p / rho2 - g.component(2) * mesh.C().component(2);
+        Info << "Updating laminar corrections " << endl;
         KM.update(p_mod);
-	volVectorField dp2 = fvc::grad(alpha2 * p_mod * (X - 1.0)) ;
+        Info << "-------------------------------" << endl;
+	volScalarField X2 = KM.pressureCorrection();
+        //KM.update(p_mod);
+	volVectorField dp2 = fvc::grad(alpha2 * p_mod * (X2 - 1.0)) ;
 
-        KM.update(KM.dispersedPhase().turbulence().k());
+        Info << "Updating turbulent corrections " << endl;
+        KM.update(k);
+        Info << "-------------------------------" << endl;
+	volScalarField X = KM.pressureCorrection();
+        volVectorField dp = 2.0 / 3.0 * fvc::grad(phase2.turbulence().k() * X * alpha2);
 
+
+        //KM.update(KM.dispersedPhase().turbulence().k());
+
+	Info << "modified pressure: " << p_mod.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(p_mod).value()
+	  <<" max: " << max(p_mod).value() << endl;
 	Info << "turbulent correction: " << dp.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(dp).value()
 	  <<" max: " << max(dp).value() << endl;

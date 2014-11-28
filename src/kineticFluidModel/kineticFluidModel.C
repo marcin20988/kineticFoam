@@ -176,6 +176,8 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
 
 void kineticFluidModel::update(const volScalarField& T)
 {
+  Info << "Updating kinetic model" << endl;
+  T_ = T;
   volScalarField k =  T;//dispersedPhase().turbulence().k();
   volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
 
@@ -189,9 +191,9 @@ void kineticFluidModel::update(const volScalarField& T)
     << tau.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(tau).value()
     <<" max: " << max(tau).value() << endl;
-  Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
+  /*Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(cd).value()
-    <<" max: " << max(cd).value() << endl;
+    <<" max: " << max(cd).value() << endl;*/
 
   E1_ = 
     (
