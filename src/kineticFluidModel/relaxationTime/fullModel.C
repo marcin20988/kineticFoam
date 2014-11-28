@@ -59,7 +59,8 @@ fullModel::fullModel
   const kineticFluidModel& KM
 ):
   relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase, KM),
-  minTau_("minTau", dimTime, kineticDict.lookup("minTau"))
+  minTau_("minTau", dimTime, kineticDict.lookup("minTau")),
+  maxTau_("maxTau", dimTime, kineticDict.lookup("maxTau"))
 {
 };
 
@@ -80,8 +81,12 @@ tmp<volScalarField> fullModel::field() const
       / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
 
   volScalarField A = 
-      27.0 * nu / ( 8.0 * k)
-      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2());
+      min
+      (
+	      27.0 * nu / ( 8.0 * k)
+	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      maxTau_
+      );
 
   return max
     (

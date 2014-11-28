@@ -55,6 +55,7 @@ class fullModel:
 {
     // Private data
     const dimensionedScalar minTau_;
+    const dimensionedScalar maxTau_;
 
         //- Description of data_
 

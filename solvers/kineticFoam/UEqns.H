@@ -44,7 +44,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi1, U1)
           - fvm::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), U1)
           + phase1.turbulence().divDevReff(U1)
-          + alpha1 * 2.0 / 3.0 * fvc::grad(phase1.turbulence().k())
+          + 2.0 / 3.0 * fvc::grad(phase1.turbulence().k() * alpha1)
          ==
           - fvm::Sp(dragCoeff/rho1, U1)
           - alpha1*alpha2/rho1
@@ -82,8 +82,14 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	//volVectorField dp = alpha2 * X fvc::grad(X * 2.0 / 3.0 * phase2.turbulence().k());
         //volVectorField dp = X * fvc::grad(p) / rho2 
             //+ 2.0 / 3.0 * phase2.turbulence().k() * fvc::grad(X);
-        volVectorField dp = 2.0 / 3.0 * fvc::grad(phase2.turbulence().k() * X);
-	volVectorField dp2 = alpha2 * ((fvc::grad(p / rho) - g) * (X - 1.0));
+        volVectorField dp = 2.0 / 3.0 * fvc::grad(phase2.turbulence().k() * X * alpha2);
+	//volVectorField dp2 = alpha2 * ((fvc::grad(p / rho) - g) * (X - 1.0));
+
+	//volVectorField dp2 = fvc::grad(alpha2 * p / rho2 * (X - 1.0)) 
+	//	- g * (X - 1.0) * alpha2;
+
+	volScalarField p_mod = p / rho2 - g.component(2) * mesh.C().component(2);
+	volVectorField dp2 = fvc::grad(alpha2 * p_mod * (X - 1.0)) ;
 
 	Info << "turbulent correction: " << dp.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(dp).value()
