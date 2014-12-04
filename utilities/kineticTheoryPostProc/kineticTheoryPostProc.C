@@ -66,8 +66,12 @@ int main(int argc, char *argv[])
 
     forAll(timeDirs, timeI)
     {
-      KM.update(KM.dispersedPhase().turbulence().k());
+      //--------------turblent corrections
       runTime.setTime(timeDirs[timeI], timeI);
+      volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
+      volScalarField k = KM.dispersedPhase().turbulence().k();
+      KM.update(k, epsilon);
+
       volScalarField cd
       (
           "cd",
@@ -76,36 +80,38 @@ int main(int argc, char *argv[])
 
 
       volScalarField pressureCorrFactor = KM.pressureCorrection();
+
       volVectorField dp
         (
-            "dp",
+            "dp_t",
             2.0 / 3.0 
             * fvc::grad
             (
                 phase2.turbulence().k() 
                 * pressureCorrFactor
+                * KM.dispersedPhase()
             )
         );
 
 
-    volScalarField k =  KM.dispersedPhase().turbulence().k();
+    //volScalarField k =  KM.dispersedPhase().turbulence().k();
     volScalarField correctedViscosity
         (
-            "dNu",
+            "dNut",
             8.0 / 9.0 
             * KM.a() * (1.0 / (KM.E1() + 2.0 * k * KM.E2())) * pow(k, 2)
         );
     
     volScalarField ratio
         (
-            "nuCorrRatio",
+            "nutCorrRatio",
             0.5 * correctedViscosity 
             / KM.dispersedPhase().turbulence().nuEff()
         );
 
     volScalarField tau
         (
-            "tau",
+            "tau_t",
             volScalarField(KM.tau())
         );
 
@@ -113,9 +119,41 @@ int main(int argc, char *argv[])
       dp.write();
       ratio.write();
       correctedViscosity.write();
-      volScalarField X("X", pressureCorrFactor);
+      volScalarField X("X_t", pressureCorrFactor);
       X.write();
       tau.write();
+      //--------------laminar corrections
+      volScalarField p_mod("p_mod", p / rho2 - g.component(2) * mesh.C().component(2));
+      volScalarField Umag2 = 0.5 * pow(mag(U2), 2) 
+          + dimensionedScalar("minU", pow(dimLength,2) / pow(dimTime,2), 0.8);
+      volScalarField dissipation = Umag2 * cd;
+      KM.update(Umag2, dissipation);
+
+      volScalarField pressureCorrFactor2 = KM.pressureCorrection();
+
+      volVectorField dp2
+        (
+            "dp_l",
+            2.0 / 3.0 
+            * fvc::grad
+            (
+                p_mod
+                * pressureCorrFactor2
+                * KM.dispersedPhase()
+            )
+        );
+
+    volScalarField tau2
+        (
+            "tau_l",
+            volScalarField(KM.tau())
+        );
+
+      dp2.write();
+      volScalarField X2("X_l", pressureCorrFactor2);
+      X2.write();
+      tau2.write();
+      p_mod.write();
     }
 
     Info<< "End\n" << endl;

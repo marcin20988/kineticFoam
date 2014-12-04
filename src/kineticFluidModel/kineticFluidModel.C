@@ -123,6 +123,19 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    ),
    mesh_,
    dimensionedScalar("a", pow(dimLength, 2) / pow(dimTime, 2), 0.0)
+  ),
+  epsilon_
+  (
+   IOobject
+   (
+    "kineticTDissipation",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::AUTO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("a", pow(dimLength, 2) / pow(dimTime, 3), 0.0)
   )
 {}
 
@@ -174,12 +187,17 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
     }
 }
 
-void kineticFluidModel::update(const volScalarField& T)
+void kineticFluidModel::update
+(
+    const volScalarField& T,
+    const volScalarField& epsilon
+)
 {
   Info << "Updating kinetic model" << endl;
   T_ = T;
+  epsilon_ = epsilon;
   volScalarField k =  T;//dispersedPhase().turbulence().k();
-  volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
+  //volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
 
   volScalarField tau = tau_ -> field();
   // in the derivation drag coefficient is taken in units of s^-1
