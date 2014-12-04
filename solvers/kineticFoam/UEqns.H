@@ -85,7 +85,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
         Info << "Updating laminar corrections " << endl;
         //KM.update(3.0 * p_mod / 2.0);
 	volScalarField Umag2 = 0.5 * pow(mag(U2), 2) 
-		+ dimensionedScalar("minU", pow(dimLength,2) / pow(dimTime,2), 0.8);
+		+ dimensionedScalar("minU", pow(dimLength,2) / pow(dimTime,2), 0.2);
         KM.update(Umag2);
         //KM.update(3.0 * p_mod / 2.0);
         Info << "-------------------------------" << endl;
