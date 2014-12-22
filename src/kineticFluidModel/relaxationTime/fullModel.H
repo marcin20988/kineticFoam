@@ -109,7 +109,11 @@ public:
 
         // Access
 
-	tmp<volScalarField> field() const;
+	tmp<volScalarField> laminar() const;
+
+	tmp<volScalarField> turbulent() const;
+
+	tmp<volScalarField> total() const;
 
         // Check
 

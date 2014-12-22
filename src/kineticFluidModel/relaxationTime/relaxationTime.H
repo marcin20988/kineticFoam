@@ -130,7 +130,11 @@ public:
 
 
     // Member Functions
-    virtual tmp<volScalarField> field() const=0;
+    virtual tmp<volScalarField> turbulent() const=0;
+
+    virtual tmp<volScalarField> laminar() const=0;
+
+    virtual tmp<volScalarField> total() const=0;
 
     // Access
 

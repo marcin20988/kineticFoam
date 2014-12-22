@@ -116,11 +116,13 @@ namespace Foam
     // Member Functions
     const phaseModel& dispersedPhase() const;
 
-    void update(const volScalarField& T, const volScalarField& epsilon);
+    void update(const volScalarField& T, const volScalarField& epsilon, const int check = -1);
 
     tmp<volScalarField> pressureCorrection() const;
 
-    tmp<volScalarField> tau() const;
+    tmp<volScalarField> tauLaminar() const;
+
+    tmp<volScalarField> tauTurbulent() const;
 
     tmp<volScalarField> E1() const
     {
@@ -148,6 +150,35 @@ namespace Foam
     }
 
     tmp<fvVectorMatrix> divDevReff(const volVectorField& U);
+
+    //list of beta functions for J integrals
+    tmp<volScalarField> beta1() const;
+    tmp<volScalarField> beta2() const;
+    tmp<volScalarField> beta3() const;
+    tmp<volScalarField> beta4() const;
+    tmp<volScalarField> beta5() const;
+    tmp<volScalarField> beta6() const;
+    tmp<volScalarField> beta7() const;
+    tmp<volScalarField> beta8() const;
+    tmp<volScalarField> beta9() const;
+    tmp<volScalarField> beta10() const;
+    tmp<volScalarField> beta11() const;
+    tmp<volScalarField> beta12() const;
+    tmp<volScalarField> beta13() const;
+    tmp<volScalarField> beta14() const;
+    tmp<volScalarField> beta15() const;
+    tmp<volScalarField> beta16() const;
+    tmp<volScalarField> beta17() const;
+
+    // J_i functions
+    tmp<volScalarField> J1() const;
+    tmp<volScalarField> J2() const;
+    tmp<volScalarField> J3() const;
+    tmp<volScalarField> J4() const;
+
+    // delta g vector
+    tmp<volVectorField> deltaG() const;
+
     // Access
 
     // Check

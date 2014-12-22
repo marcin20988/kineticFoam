@@ -190,7 +190,8 @@ void kineticFluidModel::operator=(const kineticFluidModel& rhs)
 void kineticFluidModel::update
 (
     const volScalarField& T,
-    const volScalarField& epsilon
+    const volScalarField& epsilon,
+    const int check
 )
 {
   Info << "Updating kinetic model" << endl;
@@ -199,7 +200,14 @@ void kineticFluidModel::update
   volScalarField k =  T;//dispersedPhase().turbulence().k();
   //volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
 
-  volScalarField tau = tau_ -> field();
+  volScalarField tau = tau_ -> total();
+  if(check == 0)
+  {
+	tau = tau_ -> turbulent();
+  }else if(check == 1)
+  {
+	tau = tau_ -> laminar();
+  }
   // in the derivation drag coefficient is taken in units of s^-1
   // and is strictly negative
   volScalarField cd = - fluid_.dragCoeff() 
@@ -250,14 +258,16 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 {
     volScalarField k =  temp();//dispersedPhase().turbulence().k();
 
-    volScalarField correctedViscosity = 8.0 / 9.0 
+    volScalarField correctedViscosity = 0.5 * 8.0 / 9.0 
         * a_ * (1.0 / (1.0 + E1_ + 2.0 * k * E2_)) * pow(k, 2);
     
-    volScalarField ratio = 0.5 * correctedViscosity 
-        / dispersedPhase().turbulence().nuEff();
+
     //correctedViscosity -= 2 * dispersedPhase().turbulence().nuEff();
     //correctedViscosity *= dispersedPhase().rho();
+    correctedViscosity += dispersedPhase().nu();
 
+    volScalarField ratio = correctedViscosity 
+        / dispersedPhase().turbulence().nuEff();
     Info << "Ratio of viscosity correction: " << ratio.weightedAverage(k.mesh().V()).value()
         <<" min: " << min(ratio).value()
         <<" max: " << max(ratio).value() << endl;
@@ -273,9 +283,216 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 }
 
 
-tmp<volScalarField> kineticFluidModel::tau() const
+tmp<volScalarField> kineticFluidModel::tauTurbulent() const
 {
-    return tau_ -> field();
+    return tau_ -> turbulent();
+}
+
+tmp<volScalarField> kineticFluidModel::tauLaminar() const
+{
+    return tau_ -> laminar();
+}
+
+
+tmp<volScalarField> kineticFluidModel::beta1() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.14 * pow(F1, 2) + 1.51 * F1 * F2 + 2.15 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta2() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.23 * pow(F1, 2) + 1.81 * F1 * F2 + 2.63 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta3() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.21 * pow(F1, 2) + 2.26 * F1 * F2 + 3.22 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta4() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.57 * pow(F1, 2) + 4.53 * F1 * F2 + 6.57 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta5() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return -0.10 * pow(F1, 2) - 1.68 * F1 * F2 - 2.61 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta6() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return -0.01 * pow(F1, 2) - 0.32 * F1 * F2 - 0.57 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta7() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.08 * pow(F1, 2) + 0.64 * F1 * F2 + 0.87 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta8() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.09 * pow(F1, 2) + 1.49 * F1 * F2 + 2.32 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta9() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return -0.05 * pow(F1, 2) - 0.71 * F1 * F2 - 1.04 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta10() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.05 * pow(F1, 2) + 0.57 * F1 * F2 + 0.80 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta11() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.14 * pow(F1, 2) + 1.13 * F1 * F2 + 1.64 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta12() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.06 * pow(F1, 2) + 0.80 * F1 * F2 + 1.17 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta13() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.24 * pow(F1, 2) + 2.23 * F1 * F2 + 3.21 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta14() const
+{
+	volScalarField F2 = T_ * E2_;
+	return 0.53 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta15() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return -0.05 * pow(F1, 2) - 0.71 * F1 * F2 - 1.04 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta16() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.11 * pow(F1, 2) + 1.13 * F1 * F2 + 1.61 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::beta17() const
+{
+	volScalarField F1 = 1 + E1_;
+	volScalarField F2 = T_ * E2_;
+	return 0.42 * pow(F1, 2) + 3.40 * F1 * F2 + 4.93 * pow(F2,2);
+}
+
+tmp<volScalarField> kineticFluidModel::J1() const
+{
+	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
+	return - T_ * (beta1() + pow(a, 2) * beta2());
+}
+
+tmp<volScalarField> kineticFluidModel::J2() const
+{
+	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
+	return - T_ * (beta3() + pow(a, 2) * beta4());
+}
+
+tmp<volScalarField> kineticFluidModel::J3() const
+{
+	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
+	return T_ * 
+	(
+		(
+			beta5() * pow(a, -3) 
+			+ pow(a, -1) * beta6() 
+			+ a * beta7()
+		) * exp(- pow(a,2))
+		+ beta8() * pow(a, -4)
+		+ beta9() * pow(a, -2)
+		+ beta10()
+		+ beta11() * pow(a, 2)
+	);
+}
+
+tmp<volScalarField> kineticFluidModel::J4() const
+{
+	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
+	return T_ * 
+	(
+		(
+			beta12() * pow(a, -1) 
+			+ a * beta13()
+			+ beta14() * pow(a, 3) 
+		) * exp(- pow(a,2))
+		+ beta15() * pow(a, -2)
+		+ beta16()
+		+ beta17() * pow(a, 2)
+	);
+}
+
+tmp<volVectorField> kineticFluidModel::deltaG() const
+{
+	volScalarField alpha = dispersedPhase();
+	volScalarField tau = tau_ -> total();
+	volScalarField cd = - fluid_.dragCoeff() 
+		/ dispersedPhase().rho() * dispersedPhase();
+	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
+
+	volScalarField eta1 = 1.0 - 4.0 * tau * cd 
+		/ (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2));
+
+	volScalarField eta2 = 3 * tau * epsilon_ * (1.0 - 2.0 * tau * cd) / 
+		( T_ * (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2)));
+
+	volScalarField g_cd = eta1 * 2.0 * tau / (1.0 - 2 * tau * cd) * (1.0 - R * E1_ * eta1)
+		+ eta2 * 4.0 * tau / (1.0 - 4 * tau * cd) * (1.0 - R * E1_ * eta2)
+		+ E2_ * T_ * (2.0 + 3.0 / 2.0 * R) *
+		( 
+			1.0 / cd + 4.0 * tau / (1.0 - 4 * tau * cd) 
+		);
+
+	volScalarField g_tau = eta1 * 2.0 * cd / (1.0 - 2 * tau * cd) * (1.0 - R * E1_ * eta1)
+		+ eta2 / tau / (1.0 - 4 * tau * cd) * (1.0 - R * E1_ * eta2)
+		+ E2_ * T_ * (2.0 - 3.0 / 2.0 * R) *
+		( 
+			1.0 / tau + 4.0 * tau / (1.0 - 4 * tau * cd) 
+		);
+
+	volScalarField g_epsilon = eta1 * (1.0 + E1_) / epsilon;
+
+	//TODO: this bit is HORRIBY WRONG in derivation!
+	// question to myself: how could I not seen it?... unit are SO wrong...
+	volScalarField g_T = 2 * T_ *
+		(
+			2 * E1_ - R * E1_ * E2_
+		)
 }
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 

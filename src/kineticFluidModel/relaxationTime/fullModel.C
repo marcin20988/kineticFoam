@@ -73,9 +73,9 @@ fullModel::fullModel
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
 
-tmp<volScalarField> fullModel::field() const
+tmp<volScalarField> fullModel::turbulent() const
 {
-  volScalarField nu = dispersedPhase_.turbulence().nuEff();
+  volScalarField nu = dispersedPhase_.turbulence().nut();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
   volScalarField cd = - fluid_.dragCoeff() 
       / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
@@ -95,6 +95,52 @@ tmp<volScalarField> fullModel::field() const
     );
 }
 
+tmp<volScalarField> fullModel::laminar() const
+{
+  volScalarField nu = dispersedPhase_.nu();
+  volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
+  volScalarField cd = - fluid_.dragCoeff() 
+      / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
+
+  volScalarField A = 
+      min
+      (
+	      27.0 * nu / ( 8.0 * k)
+	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      maxTau_
+      );
+
+  return max
+    (
+        A
+      , minTau_
+    );
+}
+
+tmp<volScalarField> fullModel::total() const
+{
+  Info << "Using effective viscosity to calculate relaxation time" << endl;
+  volScalarField nu = dispersedPhase_.turbulence().nuEff();
+  volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
+  volScalarField cd = - fluid_.dragCoeff() 
+      / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
+
+  volScalarField A = 
+      min
+      (
+	      27.0 * nu / ( 16.0 * k)
+	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      maxTau_
+      );
+
+  volScalarField tau = A / (1 + A * cd);
+
+  return max
+    (
+        tau
+      , minTau_
+    );
+}
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
 

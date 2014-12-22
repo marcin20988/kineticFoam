@@ -72,66 +72,30 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         volScalarField k = KM.dispersedPhase().turbulence().k();
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
-	/*volScalarField X = pressureCorrFactor;
-	if(&alpha2 == &KM.dispersedPhase())
-	{
-	  Info << "correcting pressure in phase 2" << endl;
-	  Info << "phase name is" << phase2.name()
-	    <<" and dispersed phase name is " << KM.dispersedPhase().name() << endl;
-	}else
-	{
-	  X = 0.0 * X;
-	}*/
-	volScalarField p_mod = p / rho2 - g.component(2) * mesh.C().component(2);
-        Info << "Updating laminar corrections " << endl;
-        //KM.update(3.0 * p_mod / 2.0);
-        volScalarField cd
-            (
-                "cd",
-                fluid.dragCoeff() * KM.dispersedPhase() / KM.dispersedPhase().rho()
-            );
-	volScalarField Umag2 = 0.5 * pow(mag(U2), 2) 
-		+ dimensionedScalar("minU", pow(dimLength,2) / pow(dimTime,2), 0.2);
-        volScalarField dissipation = Umag2 * cd;
-        KM.update(Umag2, dissipation);
-        //KM.update(3.0 * p_mod / 2.0);
-        Info << "-------------------------------" << endl;
+
+	//-------------------------turbulent only
+	int updateCount = 5;
+	for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 	volScalarField X2 = KM.pressureCorrection();
-        //KM.update(p_mod);
-	volVectorField dp2 = fvc::grad(p_mod * (X2 - 1.0) * alpha2) ;
-
-        Info << "Updating turbulent corrections " << endl;
-        KM.update(k, epsilon);
-        Info << "-------------------------------" << endl;
-	volScalarField X = KM.pressureCorrection();
-        volVectorField dp = 2.0 / 3.0 * fvc::grad(phase2.turbulence().k() * alpha2);
-
-
-        //KM.update(KM.dispersedPhase().turbulence().k());
-
-	Info << "modified pressure: " << p_mod.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(p_mod).value()
-	  <<" max: " << max(p_mod).value() << endl;
-	Info << "turbulent correction: " << dp.weightedAverage(mesh.V()).value()
+	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
+	Info << "------------------------------------" << endl;
+	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(X2).value()
+	  <<" max: " << max(X2).value() << endl;
+	Info << "force: " << dp.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(dp).value()
 	  <<" max: " << max(dp).value() << endl;
-	Info << "kinetic pressure correction: " << dp2.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(dp2).value()
-	  <<" max: " << max(dp2).value() << endl;
-	Info << "Umag2: " << Umag2.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(Umag2).value()
-	  <<" max: " << max(Umag2).value() << endl;
+	Info << "------------------------------------" << endl;
 
         U2Eqn =
         (
             fvm::ddt(alpha2, U2)
           + fvm::div(alphaPhi2, U2)
           - fvm::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), U2)
-          + phase2.turbulence().divDevReff(U2)
-          //+ KM.divDevReff(U2)
+          //+ phase2.turbulence().divDevReff(U2)
+          + KM.divDevReff(U2)
          ==
 	  - dp 
-	  - dp2
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2
            *(
