@@ -78,6 +78,9 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
+	
+	KM.F1(alphaPhi2);
+
 	Info << "------------------------------------" << endl;
 	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(X2).value()

@@ -84,6 +84,7 @@ namespace Foam
     volScalarField a_;
     volScalarField T_;
     volScalarField epsilon_;
+    volVectorField deltaG_;
 
   public:
 
@@ -178,6 +179,9 @@ namespace Foam
 
     // delta g vector
     tmp<volVectorField> deltaG() const;
+
+    // this given the force equal to gradient (J1 + u0 dot Delta g R sigma J_3 / u0)
+    tmp<volVectorField> F1(surfaceScalarField& phi) const;
 
     // Access
 
