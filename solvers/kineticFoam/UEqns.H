@@ -74,12 +74,15 @@ volScalarField dragCoeff(fluid.dragCoeff());
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
 
 	//-------------------------turbulent only
-	int updateCount = 5;
+	int updateCount = 10;
 	for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
 	
-	KM.F1(alphaPhi2);
+	volVectorField F1 = KM.F1(alphaPhi2);
+	volVectorField F2 = KM.F2(alphaPhi2);
+	volVectorField F3 = KM.F3(alphaPhi2);
+	volVectorField F = F1 + F2 + F3;
 
 	Info << "------------------------------------" << endl;
 	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
@@ -88,6 +91,26 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	Info << "force: " << dp.weightedAverage(mesh.V()).value()
 	  <<" min: " << min(dp).value()
 	  <<" max: " << max(dp).value() << endl;
+	Info << "F1: " << F1.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(F1).value()
+	  <<" max: " << max(F1).value() 
+	  <<" dims: " << F1.dimensions()
+	  << endl;
+	Info << "F2: " << F2.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(F2).value()
+	  <<" max: " << max(F2).value()
+	  <<" dims: " << F2.dimensions()
+	  << endl;
+	Info << "F3: " << F3.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(F3).value()
+	  <<" max: " << max(F3).value()
+	  <<" dims: " << F3.dimensions()
+	  << endl;
+	Info << "F: " << F.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(F).value()
+	  <<" max: " << max(F).value()
+	  <<" dims: " << F.dimensions()
+	  << endl;
 	Info << "------------------------------------" << endl;
 
         U2Eqn =

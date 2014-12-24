@@ -85,6 +85,8 @@ namespace Foam
     volScalarField T_;
     volScalarField epsilon_;
     volVectorField deltaG_;
+    // coefficient of restitution
+    scalar e_;
 
   public:
 
@@ -179,9 +181,15 @@ namespace Foam
 
     // delta g vector
     tmp<volVectorField> deltaG() const;
+	
+    // radial distribution function at contact
+    tmp<volScalarField> g0() const;
+    
 
     // this given the force equal to gradient (J1 + u0 dot Delta g R sigma J_3 / u0)
     tmp<volVectorField> F1(surfaceScalarField& phi) const;
+    tmp<volVectorField> F2(surfaceScalarField& phi) const;
+    tmp<volVectorField> F3(surfaceScalarField& phi) const;
 
     // Access
 

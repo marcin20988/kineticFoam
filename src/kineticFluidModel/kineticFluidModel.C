@@ -149,7 +149,8 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    ),
    mesh_,
    dimensionedVector("deltaG", dimless / dimLength, vector(0.0, 0.0, 0.0))
-  )
+  ),
+  e_(readScalar(kineticFluidModelDict_.lookup("e")))
 {}
 
 
@@ -435,7 +436,7 @@ tmp<volScalarField> kineticFluidModel::beta17() const
 
 tmp<volScalarField> kineticFluidModel::J1() const
 {
-	dimensionedScalar smallT("smallT", T_.dimensions(), SMALL);
+	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
 	return - T_ * (beta1() + pow(a, 2) * beta2());
 }
@@ -448,7 +449,7 @@ tmp<volScalarField> kineticFluidModel::J2() const
 
 tmp<volScalarField> kineticFluidModel::J3() const
 {
-	dimensionedScalar smallT("smallT", T_.dimensions(), SMALL);
+	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
 	return T_ * 
 	(
@@ -466,7 +467,9 @@ tmp<volScalarField> kineticFluidModel::J3() const
 
 tmp<volScalarField> kineticFluidModel::J4() const
 {
-	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
+	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
+	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
+
 	return T_ * 
 	(
 		(
@@ -488,19 +491,19 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 		/ dispersedPhase().rho() * dispersedPhase();
 	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
 
-	dimensionedScalar epsSmall("epsSmall", epsilon_.dimensions(), SMALL);
-	dimensionedScalar TSmall("TSmall", T_.dimensions(), SMALL);
-	dimensionedScalar cdSmall("cdSmall", cd.dimensions(), 1e-03);
-	dimensionedScalar tauSmall("tauSmall", tau.dimensions(), SMALL);
+	dimensionedScalar epsSmall("epsSmall", epsilon_.dimensions(), 1e-08);
+	dimensionedScalar TSmall("TSmall", T_.dimensions(), 1e-08);
+	dimensionedScalar cdSmall("cdSmall", cd.dimensions(), 1e-02);
+	dimensionedScalar tauSmall("tauSmall", tau.dimensions(), 1e-03);
 	cd = cd + cdSmall;
 	tau = tau + tauSmall;
 	
 
 	volScalarField eta1 = 1.0 - 4.0 * tau * cd 
-		/ (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2)) + SMALL;
+		/ (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2)) + 1e-08;
 
 	volScalarField eta2 = 3 * tau * epsilon_ * (1.0 - 2.0 * tau * cd) / 
-		( T_ * (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2))) + SMALL;
+		( T_ * (1.0 - 6.0 * tau * cd + 8.0 * pow(cd, 2) * pow(tau, 2))) + 1e-08;
 
 	volScalarField g_cd = eta1 * 2.0 * tau / (1.0 - 2 * tau * cd) * (1.0 - R * E1_ * eta1)
 		+ eta2 * 4.0 * tau / (1.0 - 4 * tau * cd) * (1.0 - R * E1_ * eta2)
@@ -557,9 +560,10 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
-	dimensionedScalar smallU("smallU", U.dimensions(), SMALL);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
 	volScalarField j3 = J3();
 	volScalarField j1 = J1();
+	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
 	Info << "j3: " 
 		<< j3.weightedAverage(j3.mesh().V()).value()
 		<<" min: " << min(j3).value()
@@ -572,12 +576,55 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 
 	volScalarField x = (deltaG_ & U) *
 		(
-			dispersedPhase().d() * j3 / ( 1.0 + E1_ + 2.0 * T_ * E2_) / (mag(U) + smallU)
+			dispersedPhase().d() * j3 / R / (mag(U) + smallU)
 		) + j1;
 
-	//TODO: here should be a constant with e and g_0!
-	return fvc::grad(x);
+	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) * g0() * fvc::grad(x);
 }
+
+tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
+{
+	const volVectorField& U = dispersedPhase().U();
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	volScalarField j3 = J3();
+	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
+
+	volVectorField x = fvc::div(deltaG_ * j3) * U / (mag(U) + smallU);
+	x += fvc::div(phi, deltaG_ * j3) / (mag(U) + smallU);
+	return 6.0 * (1.0 + e_) * pow(R, 3) * dispersedPhase().d() * pow(dispersedPhase(), 2) * g0() * x;
+}
+
+tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
+{
+	const volVectorField& U = dispersedPhase().U();
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	volScalarField j1 = J1();
+	volScalarField j2 = J2();
+	volScalarField j3 = J3();
+	volScalarField j4 = J4();
+	Info << "j2: " 
+		<< j2.weightedAverage(j2.mesh().V()).value()
+		<<" min: " << min(j2).value()
+		<<" max: " << max(j2).value() << endl;
+	Info << "j4: " 
+		<< j4.weightedAverage(j4.mesh().V()).value()
+		<<" min: " << min(j4).value()
+		<<" max: " << max(j4).value() << endl;
+	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
+
+	volScalarField x = (U & deltaG_) * (2.0 * j4 - 5.0 * j3) / (mag(U) + smallU) * R * dispersedPhase().d();
+	x += 2.0 * j2 - 3.0 * j1;
+	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) * g0() 
+		* fvc::div(phi, x) * U / pow(mag(U) + smallU, 2);
+}
+
+
+tmp<volScalarField> kineticFluidModel::g0() const
+{
+	const volScalarField alpha = dispersedPhase();
+	return (2.0 - alpha) / (2.0 * pow(1.0 - alpha, 3));
+}
+
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
 
