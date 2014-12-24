@@ -74,7 +74,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
 
 	//-------------------------turbulent only
-	int updateCount = 10;
+	int updateCount = 5;
 	for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
@@ -83,6 +83,35 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F2 = KM.F2(alphaPhi2);
 	volVectorField F3 = KM.F3(alphaPhi2);
 	volVectorField F = F1 + F2 + F3;
+
+	forAll(mesh.C(), celli)
+	{
+		F[celli].x() = min(F[celli].x(), 100.0);
+		F[celli].y() = min(F[celli].y(), 100.0);
+		F[celli].z() = min(F[celli].z(), 100.0);
+
+		F[celli].x() = max(F[celli].x(), -100.0);
+		F[celli].y() = max(F[celli].y(), -100.0);
+		F[celli].z() = max(F[celli].z(), -100.0);
+	}
+	
+	// deleta force next to wall
+	//const fvPatchList& patches = mesh.boundary();
+
+	/*forAll(patches, patchi)
+	{
+		const fvPatch& curPatch = patches[patchi];
+		if (isType<wallFvPatch>(curPatch))
+		{
+			forAll(curPatch, facei)
+			{
+				label faceCelli = curPatch.faceCells()[facei];
+				F[faceCelli] = vector(0, 0, 0);
+			}
+		}
+	}*/
+	//-------------------------
+
 
 	Info << "------------------------------------" << endl;
 	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
@@ -122,6 +151,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + KM.divDevReff(U2)
          ==
 	  - dp 
+	  - F
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2
            *(

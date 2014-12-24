@@ -437,7 +437,7 @@ tmp<volScalarField> kineticFluidModel::beta17() const
 tmp<volScalarField> kineticFluidModel::J1() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
-	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
+	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), -1.0);
 	return - T_ * (beta1() + pow(a, 2) * beta2());
 }
 
@@ -549,7 +549,7 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 		<<" min: " << min(g_alpha).value()
 		<<" max: " << max(g_alpha).value() << endl;
 
-	return g_alpha * fvc::grad(alpha)
+	return  g_alpha * fvc::grad(alpha)
 		+ g_epsilon * fvc::grad(epsilon_)
 		+ g_T * fvc::grad(T_)
 		+ g_tau * fvc::grad(tau)
@@ -561,9 +561,18 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
 	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	const volScalarField rad = g0();
 	volScalarField j3 = J3();
 	volScalarField j1 = J1();
 	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
+	Info << "R: " 
+		<< R.weightedAverage(R.mesh().V()).value()
+		<<" min: " << min(R).value()
+		<<" max: " << max(R).value() << endl;
+	Info << "g0: " 
+		<< rad.weightedAverage(rad.mesh().V()).value()
+		<<" min: " << min(rad).value()
+		<<" max: " << max(rad).value() << endl;
 	Info << "j3: " 
 		<< j3.weightedAverage(j3.mesh().V()).value()
 		<<" min: " << min(j3).value()

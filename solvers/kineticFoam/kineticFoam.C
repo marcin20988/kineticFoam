@@ -37,6 +37,7 @@ Description
 #include "IOMRFZoneList.H"
 #include "fixedFluxPressureFvPatchScalarField.H"
 #include "kineticFluidModel.H"
+#include "wallFvPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
