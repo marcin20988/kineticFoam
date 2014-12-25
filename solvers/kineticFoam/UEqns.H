@@ -89,7 +89,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         forAll(mesh.C(), celli)
         {
-                if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3)
+                if(mesh.C()[celli].z() < 0.2 || mesh.C()[celli].z() > 3)
                 {
                     F[celli] = vector(0, 0, 0);
                 }
