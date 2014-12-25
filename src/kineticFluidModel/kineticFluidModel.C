@@ -262,9 +262,53 @@ void kineticFluidModel::update
     <<" max: " << max(a_).value() << endl;
 
   deltaG_ = deltaG();
+  deltaG_.boundaryField() = vector(0, 0, 0);
+
+  dimensionedScalar treshold("minG", dimless / dimLength, 1e04);
+  //deltaG_.component(0) =
+      //min(treshold, deltaG_.component(0));
+  //deltaG_.component(0) =
+      //max(-treshold, deltaG_.component(0));
+  forAll(deltaG_.mesh().V(), celli)
+  {
+      deltaG_[celli].x() = min(1e04, deltaG_[celli].x());
+      deltaG_[celli].x() = max(-1e04, deltaG_[celli].x());
+
+      deltaG_[celli].y() = min(1e04, deltaG_[celli].y());
+      deltaG_[celli].y() = max(-1e04, deltaG_[celli].y());
+
+      deltaG_[celli].z() = min(1e04, deltaG_[celli].z());
+      deltaG_[celli].z() = max(-1e04, deltaG_[celli].z());
+  }
+
+  //deltaG_.internalField().component(1) =
+      //min(1e04, deltaG_.internalField().component(1));
+  //deltaG_.internalField().component(1) =
+      //max(-1e04, deltaG_.internalField().component(1));
+
+  //deltaG_.internalField().component(2) =
+      //min(1e04, deltaG_.internalField().component(2));
+  //deltaG_.internalField().component(2) =
+      max(-1e04, deltaG_.internalField().component(2));
+
+  //const fvPatchList& patches = deltaG_.mesh().boundary();
+
+  //forAll(patches, patchi)
+  //{
+      //const fvPatch& curPatch = patches[patchi];
+      //if (isType<wallFvPatch>(curPatch))
+      //{
+          //forAll(curPatch, facei)
+          //{
+              //label faceCelli = curPatch.faceCells()[facei];
+              //deltaG_[faceCelli] = vector(0, 0, 0);
+          //}
+      //}
+  //}
+
   Info << "deltaG: " << deltaG_.weightedAverage(tau.mesh().V()).value()
-    <<" min: " << min(deltaG_).value()
-    <<" max: " << max(deltaG_).value() << endl;
+      <<" min: " << min(deltaG_).value()
+      <<" max: " << max(deltaG_).value() << endl;
 };
 
 
@@ -550,10 +594,10 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 		<<" max: " << max(g_alpha).value() << endl;
 
 	return  g_alpha * fvc::grad(alpha)
-		+ g_epsilon * fvc::grad(epsilon_)
+                + g_epsilon * fvc::grad(epsilon_)
 		+ g_T * fvc::grad(T_)
-		+ g_tau * fvc::grad(tau)
-		+ g_cd * fvc::grad(cd); 
+                + g_tau * fvc::grad(tau)
+                + g_cd * fvc::grad(cd); 
 }
 
 

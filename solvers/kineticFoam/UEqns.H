@@ -79,21 +79,28 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
 	
-	volVectorField F1 = KM.F1(alphaPhi2);
-	volVectorField F2 = KM.F2(alphaPhi2);
-	volVectorField F3 = KM.F3(alphaPhi2);
+	volVectorField F1 ("F1", KM.F1(alphaPhi2));
+	volVectorField F2 ("F2", KM.F2(alphaPhi2));
+	volVectorField F3 ("F3", KM.F3(alphaPhi2));
+        //F1.write();
+        //F2.write();
+        //F3.write();
 	volVectorField F = F1 + F2 + F3;
 
-	forAll(mesh.C(), celli)
-	{
-		F[celli].x() = min(F[celli].x(), 100.0);
-		F[celli].y() = min(F[celli].y(), 100.0);
-		F[celli].z() = min(F[celli].z(), 100.0);
+        forAll(mesh.C(), celli)
+        {
+                if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3)
+                {
+                    F[celli] = vector(0, 0, 0);
+                }
+                //F[celli].x() = min(F[celli].x(), 100.0);
+                //F[celli].y() = min(F[celli].y(), 100.0);
+                //F[celli].z() = min(F[celli].z(), 100.0);
 
-		F[celli].x() = max(F[celli].x(), -100.0);
-		F[celli].y() = max(F[celli].y(), -100.0);
-		F[celli].z() = max(F[celli].z(), -100.0);
-	}
+                //F[celli].x() = max(F[celli].x(), -100.0);
+                //F[celli].y() = max(F[celli].y(), -100.0);
+                //F[celli].z() = max(F[celli].z(), -100.0);
+        }
 	
 	// deleta force next to wall
 	//const fvPatchList& patches = mesh.boundary();

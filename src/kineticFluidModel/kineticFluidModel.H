@@ -42,6 +42,7 @@ SourceFiles
 #include "fvm.H"
 #include "fvc.H"
 #include "fvMatrices.H"
+#include "wallFvPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
