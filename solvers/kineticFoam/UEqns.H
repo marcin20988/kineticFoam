@@ -70,8 +70,9 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
     {
 
-        volScalarField k = KM.dispersedPhase().turbulence().k();
-        volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
+        volScalarField k = fluid.otherPhase(KM.dispersedPhase()).turbulence().k();
+        volScalarField epsilon = fluid.otherPhase(KM.dispersedPhase()).turbulence().epsilon();
+        //volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
 
 	//-------------------------turbulent only
 	int updateCount = 5;
