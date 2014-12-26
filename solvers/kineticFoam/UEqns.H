@@ -96,17 +96,28 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         forAll(mesh.C(), celli)
         {
+                scalar count = 1.0;
+                F[celli] = F1[celli];
+                forAll(mesh.cellCells()[celli], cellj)
+                {
+                    label n_id = mesh.cellCells()[celli][cellj];
+                    count += 1.0;
+                    F[celli] += F1[n_id];
+                }
+                F[celli] /= count;
+
                 //if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3.1)
                 //{
                     //F[celli] = vector(0, 0, 0);
                 //}
+                F[celli].z() = 0.0f;
                 F[celli].x() = min(F[celli].x(), 500.0);
                 F[celli].y() = min(F[celli].y(), 500.0);
-                F[celli].z() = min(F[celli].z(), 500.0);
+                //F[celli].z() = min(F[celli].z(), 500.0);
 
                 F[celli].x() = max(F[celli].x(), -500.0);
                 F[celli].y() = max(F[celli].y(), -500.0);
-                F[celli].z() = max(F[celli].z(), -500.0);
+                //F[celli].z() = max(F[celli].z(), -500.0);
         }
 	volScalarField Fmag = mag(F);
 
