@@ -84,7 +84,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
 
 
-	volVectorField F ("F-total", F1 + F2 + F3);
+	volVectorField F ("F-total", F1);
         dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 100.0);
         F.boundaryField() = vector(0,0,0);
         /*F.component(0) = min(F.component(0), F_tres);;*/
@@ -120,18 +120,18 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	// deleta force next to wall
         const fvPatchList& patches = mesh.boundary();
 
-	forAll(patches, patchi)
-	{
-		const fvPatch& curPatch = patches[patchi];
-		if (isType<wallFvPatch>(curPatch))
-		{
-			forAll(curPatch, facei)
-			{
-				label faceCelli = curPatch.faceCells()[facei];
-				F[faceCelli] = vector(0, 0, 0);
-			}
-		}
-	}
+	//forAll(patches, patchi)
+	//{
+		//const fvPatch& curPatch = patches[patchi];
+		//if (isType<wallFvPatch>(curPatch))
+		//{
+			//forAll(curPatch, facei)
+			//{
+				//label faceCelli = curPatch.faceCells()[facei];
+				//F[faceCelli] = vector(0, 0, 0);
+			//}
+		//}
+	//}
 	//-------------------------
 
 

@@ -289,7 +289,7 @@ void kineticFluidModel::update
   //deltaG_.internalField().component(2) =
       //min(1e04, deltaG_.internalField().component(2));
   //deltaG_.internalField().component(2) =
-      max(-1e04, deltaG_.internalField().component(2));
+      //max(-1e04, deltaG_.internalField().component(2));
 
   //const fvPatchList& patches = deltaG_.mesh().boundary();
 
@@ -482,21 +482,58 @@ tmp<volScalarField> kineticFluidModel::J1() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), -1.0);
-	return - T_ * (beta1() + pow(a, 2) * beta2());
+        volScalarField j1 = beta1() + pow(a, 2) * beta2();
+        j1.boundaryField() = 0;
+        // deleta force next to wall
+        const fvPatchList& patches = j1.mesh().boundary();
+
+        //forAll(patches, patchi)
+        //{
+            //const fvPatch& curPatch = patches[patchi];
+            //if (isType<wallFvPatch>(curPatch))
+            //{
+                //forAll(curPatch, facei)
+                //{
+                    //label faceCelli = curPatch.faceCells()[facei];
+                    //j1[faceCelli] = 0;
+                //}
+            //}
+        //}
+	//-------------------------
+	return - T_ * j1;
 }
 
 tmp<volScalarField> kineticFluidModel::J2() const
 {
 	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
-	return - T_ * (beta3() + pow(a, 2) * beta4());
+
+        volScalarField j2 = beta3() + pow(a, 2) * beta4();
+        j2.boundaryField() = 0;
+        // deleta force next to wall
+        const fvPatchList& patches = j2.mesh().boundary();
+
+        //forAll(patches, patchi)
+        //{
+            //const fvPatch& curPatch = patches[patchi];
+            //if (isType<wallFvPatch>(curPatch))
+            //{
+                //forAll(curPatch, facei)
+                //{
+                    //label faceCelli = curPatch.faceCells()[facei];
+                    //j2[faceCelli] = 0;
+                //}
+            //}
+        //}
+	//-------------------------
+	return - T_ * j2;
 }
 
 tmp<volScalarField> kineticFluidModel::J3() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
-	return T_ * 
-	(
+
+        volScalarField j3 = 
 		(
 			beta5() * pow(a, -3) 
 			+ pow(a, -1) * beta6() 
@@ -505,8 +542,25 @@ tmp<volScalarField> kineticFluidModel::J3() const
 		+ beta8() * pow(a, -4)
 		+ beta9() * pow(a, -2)
 		+ beta10()
-		+ beta11() * pow(a, 2)
-	);
+		+ beta11() * pow(a, 2);
+        j3.boundaryField() = 0;
+        // deleta force next to wall
+        const fvPatchList& patches = j3.mesh().boundary();
+
+        //forAll(patches, patchi)
+        //{
+            //const fvPatch& curPatch = patches[patchi];
+            //if (isType<wallFvPatch>(curPatch))
+            //{
+                //forAll(curPatch, facei)
+                //{
+                    //label faceCelli = curPatch.faceCells()[facei];
+                    //j3[faceCelli] = 0;
+                //}
+            //}
+        //}
+	//-------------------------
+	return T_ * j3;
 }
 
 tmp<volScalarField> kineticFluidModel::J4() const
@@ -514,8 +568,7 @@ tmp<volScalarField> kineticFluidModel::J4() const
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
 
-	return T_ * 
-	(
+        volScalarField j4 = 
 		(
 			beta12() * pow(a, -1) 
 			+ a * beta13()
@@ -523,8 +576,26 @@ tmp<volScalarField> kineticFluidModel::J4() const
 		) * exp(- pow(a,2))
 		+ beta15() * pow(a, -2)
 		+ beta16()
-		+ beta17() * pow(a, 2)
-	);
+		+ beta17() * pow(a, 2);
+        j4.boundaryField() = 0;
+        // deleta force next to wall
+        const fvPatchList& patches = j4.mesh().boundary();
+
+        //forAll(patches, patchi)
+        //{
+            //const fvPatch& curPatch = patches[patchi];
+            //if (isType<wallFvPatch>(curPatch))
+            //{
+                //forAll(curPatch, facei)
+                //{
+                    //label faceCelli = curPatch.faceCells()[facei];
+                    //j4[faceCelli] = 0;
+                //}
+            //}
+        //}
+	//-------------------------
+
+	return T_ * j4;
 }
 
 tmp<volVectorField> kineticFluidModel::deltaG() const
@@ -629,6 +700,11 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
         //g4.write();
         //g5.write();
 
+        g1.boundaryField() = vector(0,0,0);
+        g2.boundaryField() = vector(0,0,0);
+        g3.boundaryField() = vector(0,0,0);
+        g4.boundaryField() = vector(0,0,0);
+        g5.boundaryField() = vector(0,0,0);
         //forAll(patches, patchi)
         //{
                 //const fvPatch& curPatch = patches[patchi];
@@ -642,7 +718,7 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
                 //}
         //}
 
-	return  (g1 + g2 + g3 + g4 + g5);
+	return  (g1 + g2 + g3 + g4) * 0;
             //g_alpha * fvc::grad(alpha)
                 //+ g_epsilon * fvc::grad(epsilon_)
 		//+ g_T * fvc::grad(T_);
@@ -677,10 +753,10 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 		<<" max: " << max(j1).value() << endl;
 
 
-	volScalarField x = (deltaG_ & U) *
+	volScalarField x = /*(deltaG_ & U) *
 		(
 			dispersedPhase().d() * j3 / R / (mag(U) + smallU)
-		) + j1;
+		) +*/ j1;
 
 	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) * g0() * fvc::grad(x);
 }
