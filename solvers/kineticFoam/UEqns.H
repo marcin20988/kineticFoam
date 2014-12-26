@@ -96,10 +96,10 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         forAll(mesh.C(), celli)
         {
-                if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3.1)
-                {
-                    F[celli] = vector(0, 0, 0);
-                }
+                //if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3.1)
+                //{
+                    //F[celli] = vector(0, 0, 0);
+                //}
                 F[celli].x() = min(F[celli].x(), 500.0);
                 F[celli].y() = min(F[celli].y(), 500.0);
                 F[celli].z() = min(F[celli].z(), 500.0);
@@ -109,6 +109,25 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 F[celli].z() = max(F[celli].z(), -500.0);
         }
 	volScalarField Fmag = mag(F);
+
+	
+	// deleta force next to wall
+        const fvPatchList& patches = mesh.boundary();
+
+        forAll(patches, patchi)
+        {
+                const fvPatch& curPatch = patches[patchi];
+                if (isType<wallFvPatch>(curPatch))
+                {
+                        forAll(curPatch, facei)
+                        {
+                                label faceCelli = curPatch.faceCells()[facei];
+                                F[faceCelli] = vector(0, 0, 0);
+                        }
+                }
+        }
+	//-------------------------
+
         if(mesh.time().outputTime())
         {
             F1.write();
@@ -116,24 +135,6 @@ volScalarField dragCoeff(fluid.dragCoeff());
             F3.write();
             F.write();
         }
-	
-	// deleta force next to wall
-        const fvPatchList& patches = mesh.boundary();
-
-	//forAll(patches, patchi)
-	//{
-		//const fvPatch& curPatch = patches[patchi];
-		//if (isType<wallFvPatch>(curPatch))
-		//{
-			//forAll(curPatch, facei)
-			//{
-				//label faceCelli = curPatch.faceCells()[facei];
-				//F[faceCelli] = vector(0, 0, 0);
-			//}
-		//}
-	//}
-	//-------------------------
-
 
 	Info << "------------------------------------" << endl;
 	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()

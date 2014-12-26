@@ -487,9 +487,9 @@ tmp<volScalarField> kineticFluidModel::J1() const
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
 	volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), -1.0);
         volScalarField j1 = beta1() + pow(a, 2) * beta2();
-        j1.boundaryField() = 0;
+        //j1.boundaryField() = 0;
         // deleta force next to wall
-        const fvPatchList& patches = j1.mesh().boundary();
+        //const fvPatchList& patches = j1.mesh().boundary();
 
         //forAll(patches, patchi)
         //{
