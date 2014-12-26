@@ -66,95 +66,73 @@ int main(int argc, char *argv[])
 
     forAll(timeDirs, timeI)
     {
-      //--------------turblent corrections
-      runTime.setTime(timeDirs[timeI], timeI);
-      volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
-      volScalarField k = KM.dispersedPhase().turbulence().k();
-      KM.update(k, epsilon);
+        //--------------turblent corrections
+        runTime.setTime(timeDirs[timeI], timeI);
+        volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
+        volScalarField k = KM.dispersedPhase().turbulence().k();
+        int updateCount = 5;
+        for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 
-      volScalarField cd
-      (
-          "cd",
-          fluid.dragCoeff() * KM.dispersedPhase() / KM.dispersedPhase().rho()
-      );
-
-
-      volScalarField pressureCorrFactor = KM.pressureCorrection();
-
-      volVectorField dp
-        (
-            "dp_t",
-            2.0 / 3.0 
-            * fvc::grad
+        volScalarField cd
             (
-                phase2.turbulence().k() 
-                * pressureCorrFactor
-                * KM.dispersedPhase()
-            )
-        );
+                "cd",
+                fluid.dragCoeff() * KM.dispersedPhase() / KM.dispersedPhase().rho()
+            );
 
 
-    //volScalarField k =  KM.dispersedPhase().turbulence().k();
-    volScalarField correctedViscosity
-        (
-            "dNut",
-            8.0 / 9.0 
-            * KM.a() * (1.0 / (KM.E1() + 2.0 * k * KM.E2())) * pow(k, 2)
-        );
-    
-    volScalarField ratio
-        (
-            "nutCorrRatio",
-            0.5 * correctedViscosity 
-            / KM.dispersedPhase().turbulence().nuEff()
-        );
+        volScalarField pressureCorrFactor = KM.pressureCorrection();
 
-    volScalarField tau
-        (
-            "tau_t",
-            volScalarField(KM.tau())
-        );
-
-      cd.write();
-      dp.write();
-      ratio.write();
-      correctedViscosity.write();
-      volScalarField X("X_t", pressureCorrFactor);
-      X.write();
-      tau.write();
-      //--------------laminar corrections
-      volScalarField p_mod("p_mod", p / rho2 - g.component(2) * mesh.C().component(2));
-      volScalarField Umag2 = 0.5 * pow(mag(U2), 2) 
-          + dimensionedScalar("minU", pow(dimLength,2) / pow(dimTime,2), 0.8);
-      volScalarField dissipation = Umag2 * cd;
-      KM.update(Umag2, dissipation);
-
-      volScalarField pressureCorrFactor2 = KM.pressureCorrection();
-
-      volVectorField dp2
-        (
-            "dp_l",
-            2.0 / 3.0 
-            * fvc::grad
+        volVectorField dp
             (
-                p_mod
-                * pressureCorrFactor2
-                * KM.dispersedPhase()
-            )
-        );
+                "dp",
+                2.0 / 3.0 
+                * fvc::grad
+                (
+                    phase2.turbulence().k() 
+                    * pressureCorrFactor
+                    * KM.dispersedPhase()
+                )
+            );
 
-    volScalarField tau2
-        (
-            "tau_l",
-            volScalarField(KM.tau())
-        );
 
-      dp2.write();
-      volScalarField X2("X_l", pressureCorrFactor2);
-      X2.write();
-      tau2.write();
-      p_mod.write();
+        volScalarField correctedViscosity
+            (
+                "dNut",
+                8.0 / 9.0 
+                * KM.a() * (1.0 / (KM.E1() + 2.0 * k * KM.E2())) * pow(k, 2)
+            );
+
+        volScalarField ratio
+            (
+                "nutCorrRatio",
+                0.5 * correctedViscosity 
+                / KM.dispersedPhase().turbulence().nuEff()
+            );
+
+        volScalarField tau
+            (
+                "tau",
+                volScalarField(KM.tauTotal())
+            );
+
+        cd.write();
+        dp.write();
+        ratio.write();
+        correctedViscosity.write();
+        volScalarField X("X", pressureCorrFactor);
+        X.write();
+        tau.write();
+
+        volScalarField J1("J1", KM.J1());
+        volScalarField J2("J2", KM.J2());
+        volScalarField J3("J3", KM.J3());
+        volScalarField J4("J4", KM.J4());
+        J1.write();
+        J2.write();
+        J3.write();
+        J4.write();
     }
+
 
     Info<< "End\n" << endl;
 

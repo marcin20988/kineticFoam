@@ -359,6 +359,10 @@ tmp<volScalarField> kineticFluidModel::tauLaminar() const
     return tau_ -> laminar();
 }
 
+tmp<volScalarField> kineticFluidModel::tauTotal() const
+{
+    return tau_ -> total();
+}
 
 tmp<volScalarField> kineticFluidModel::beta1() const
 {

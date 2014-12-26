@@ -128,6 +128,8 @@ namespace Foam
 
     tmp<volScalarField> tauTurbulent() const;
 
+    tmp<volScalarField> tauTotal() const;
+
     tmp<volScalarField> E1() const
     {
         return E1_;
