@@ -82,24 +82,39 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F1 ("F1", KM.F1(alphaPhi2));
 	volVectorField F2 ("F2", KM.F2(alphaPhi2));
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
-        //F1.write();
-        //F2.write();
-        //F3.write();
-	volVectorField F = F1 + F2 + F3;
+
+
+	volVectorField F ("F-total", F1 + F2 + F3);
+        dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 100.0);
+        F.boundaryField() = vector(0,0,0);
+        /*F.component(0) = min(F.component(0), F_tres);;*/
+        //F.component(0) = max(F.component(0), -F_tres);;
+        //F.component(1) = min(F.component(1), F_tres);;
+        //F.component(1) = min(F.component(1), F_tres);;
+        //F.component(2) = max(F.component(2), -F_tres);;
+        //F.component(2) = max(F.component(2), -F_tres);;
 
         forAll(mesh.C(), celli)
         {
-                if(mesh.C()[celli].z() < 0.2 || mesh.C()[celli].z() > 3)
+                if(mesh.C()[celli].z() < 0.5 || mesh.C()[celli].z() > 3.1)
                 {
                     F[celli] = vector(0, 0, 0);
                 }
-                //F[celli].x() = min(F[celli].x(), 100.0);
-                //F[celli].y() = min(F[celli].y(), 100.0);
-                //F[celli].z() = min(F[celli].z(), 100.0);
+                F[celli].x() = min(F[celli].x(), 500.0);
+                F[celli].y() = min(F[celli].y(), 500.0);
+                F[celli].z() = min(F[celli].z(), 500.0);
 
-                //F[celli].x() = max(F[celli].x(), -100.0);
-                //F[celli].y() = max(F[celli].y(), -100.0);
-                //F[celli].z() = max(F[celli].z(), -100.0);
+                F[celli].x() = max(F[celli].x(), -500.0);
+                F[celli].y() = max(F[celli].y(), -500.0);
+                F[celli].z() = max(F[celli].z(), -500.0);
+        }
+	volScalarField Fmag = mag(F);
+        if(mesh.time().outputTime())
+        {
+            F1.write();
+            F2.write();
+            F3.write();
+            F.write();
         }
 	
 	// deleta force next to wall
@@ -146,6 +161,11 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	  <<" min: " << min(F).value()
 	  <<" max: " << max(F).value()
 	  <<" dims: " << F.dimensions()
+	  << endl;
+	Info << "Fmag: " << Fmag.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(Fmag).value()
+	  <<" max: " << max(Fmag).value()
+	  <<" dims: " << Fmag.dimensions()
 	  << endl;
 	Info << "------------------------------------" << endl;
 

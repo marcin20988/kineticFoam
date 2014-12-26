@@ -264,21 +264,21 @@ void kineticFluidModel::update
   deltaG_ = deltaG();
   deltaG_.boundaryField() = vector(0, 0, 0);
 
-  dimensionedScalar treshold("minG", dimless / dimLength, 1e04);
+  scalar treshold = 1e04;
   //deltaG_.component(0) =
       //min(treshold, deltaG_.component(0));
   //deltaG_.component(0) =
       //max(-treshold, deltaG_.component(0));
   forAll(deltaG_.mesh().V(), celli)
   {
-      deltaG_[celli].x() = min(1e04, deltaG_[celli].x());
-      deltaG_[celli].x() = max(-1e04, deltaG_[celli].x());
+      deltaG_[celli].x() = min(treshold, deltaG_[celli].x());
+      deltaG_[celli].x() = max(-treshold, deltaG_[celli].x());
 
-      deltaG_[celli].y() = min(1e04, deltaG_[celli].y());
-      deltaG_[celli].y() = max(-1e04, deltaG_[celli].y());
+      deltaG_[celli].y() = min(treshold, deltaG_[celli].y());
+      deltaG_[celli].y() = max(-treshold, deltaG_[celli].y());
 
-      deltaG_[celli].z() = min(1e04, deltaG_[celli].z());
-      deltaG_[celli].z() = max(-1e04, deltaG_[celli].z());
+      deltaG_[celli].z() = min(treshold, deltaG_[celli].z());
+      deltaG_[celli].z() = max(-treshold, deltaG_[celli].z());
   }
 
   //deltaG_.internalField().component(1) =
@@ -537,10 +537,10 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 
 	dimensionedScalar epsSmall("epsSmall", epsilon_.dimensions(), 1e-08);
 	dimensionedScalar TSmall("TSmall", T_.dimensions(), 1e-08);
-	dimensionedScalar cdSmall("cdSmall", cd.dimensions(), 1e-02);
-	dimensionedScalar tauSmall("tauSmall", tau.dimensions(), 1e-03);
+	dimensionedScalar cdSmall("cdSmall", cd.dimensions(), 1e-08);
+	//dimensionedScalar tauSmall("tauSmall", tau.dimensions(), 1e-03);
 	cd = cd + cdSmall;
-	tau = tau + tauSmall;
+	//tau = tau + tauSmall;
 	
 
 	volScalarField eta1 = 1.0 - 4.0 * tau * cd 
@@ -587,17 +587,67 @@ tmp<volVectorField> kineticFluidModel::deltaG() const
 		<<" min: " << min(g_T).value()
 		<<" max: " << max(g_T).value() << endl;
 
-	volScalarField g_alpha = E1_ + 2.0 * T_ * E2_;
+	volScalarField g_alpha = (E1_ + 2.0 * T_ * E2_) / (alpha + SMALL);
 	Info << "g_alpha coefficient: " 
 		<< g_alpha.weightedAverage(g_alpha.mesh().V()).value()
 		<<" min: " << min(g_alpha).value()
 		<<" max: " << max(g_alpha).value() << endl;
 
-	return  g_alpha * fvc::grad(alpha)
-                + g_epsilon * fvc::grad(epsilon_)
-		+ g_T * fvc::grad(T_)
-                + g_tau * fvc::grad(tau)
-                + g_cd * fvc::grad(cd); 
+        // deleta force next to wall
+        const fvPatchList& patches = E2_.mesh().boundary();
+
+
+        volVectorField g1("g_eps", g_epsilon * fvc::grad(epsilon_));
+        volVectorField g2("g_alpha", g_alpha * fvc::grad(alpha));
+        volVectorField g3("g_T", g_T * fvc::grad(T_));
+        volVectorField g4("g_tau", g_tau * fvc::grad(tau));
+        volVectorField g5("g_cd", g_cd * fvc::grad(cd));
+
+	Info << "g-eps: " 
+		<< g1.weightedAverage(g_alpha.mesh().V()).value()
+		<<" min: " << min(g1).value()
+		<<" max: " << max(g1).value() << endl;
+	Info << "g-alpha: " 
+		<< g2.weightedAverage(g_alpha.mesh().V()).value()
+		<<" min: " << min(g2).value()
+		<<" max: " << max(g2).value() << endl;
+	Info << "g-k: " 
+		<< g3.weightedAverage(g_alpha.mesh().V()).value()
+		<<" min: " << min(g3).value()
+		<<" max: " << max(g3).value() << endl;
+	Info << "g-tau: " 
+		<< g4.weightedAverage(g_alpha.mesh().V()).value()
+		<<" min: " << min(g4).value()
+		<<" max: " << max(g4).value() << endl;
+	Info << "g-cd: " 
+		<< g5.weightedAverage(g_alpha.mesh().V()).value()
+		<<" min: " << min(g5).value()
+		<<" max: " << max(g5).value() << endl;
+        //g1.write();
+        //g2.write();
+        //g3.write();
+        //g4.write();
+        //g5.write();
+
+        //forAll(patches, patchi)
+        //{
+                //const fvPatch& curPatch = patches[patchi];
+                //if (isType<wallFvPatch>(curPatch))
+                //{
+                        //forAll(curPatch, facei)
+                        //{
+                                //label faceCelli = curPatch.faceCells()[facei];
+                                //x[faceCelli] = vector(0, 0, 0);
+                        //}
+                //}
+        //}
+
+	return  (g1 + g2 + g3 + g4 + g5);
+            //g_alpha * fvc::grad(alpha)
+                //+ g_epsilon * fvc::grad(epsilon_)
+		//+ g_T * fvc::grad(T_);
+                //+ g_tau * fvc::grad(tau);
+                //+ g_cd * fvc::grad(cd); 
 }
 
 
@@ -638,7 +688,7 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 	volScalarField j3 = J3();
 	volScalarField R = 1.0 / (1.0 + E1_ + 2 * T_ * E2_);
 
