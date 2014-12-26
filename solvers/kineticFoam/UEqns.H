@@ -118,9 +118,9 @@ volScalarField dragCoeff(fluid.dragCoeff());
         }
 	
 	// deleta force next to wall
-	//const fvPatchList& patches = mesh.boundary();
+        const fvPatchList& patches = mesh.boundary();
 
-	/*forAll(patches, patchi)
+	forAll(patches, patchi)
 	{
 		const fvPatch& curPatch = patches[patchi];
 		if (isType<wallFvPatch>(curPatch))
@@ -131,7 +131,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 				F[faceCelli] = vector(0, 0, 0);
 			}
 		}
-	}*/
+	}
 	//-------------------------
 
 
