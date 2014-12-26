@@ -68,8 +68,11 @@ int main(int argc, char *argv[])
     {
         //--------------turblent corrections
         runTime.setTime(timeDirs[timeI], timeI);
-        volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
-        volScalarField k = KM.dispersedPhase().turbulence().k();
+        //volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
+        //volScalarField k = KM.dispersedPhase().turbulence().k();
+        volScalarField k = fluid.otherPhase(KM.dispersedPhase()).turbulence().k();
+        volScalarField epsilon = fluid.otherPhase(KM.dispersedPhase()).turbulence().epsilon();
+
         int updateCount = 5;
         for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
 

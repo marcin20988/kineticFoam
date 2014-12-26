@@ -78,7 +78,7 @@ tmp<volScalarField> fullModel::turbulent() const
   volScalarField nu = dispersedPhase_.turbulence().nut();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
   volScalarField cd = - fluid_.dragCoeff() 
-      / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
+      / KM_.dispersedPhase().rho() * KM_.dispersedPhase() * 0;
 
   volScalarField A = 
       min
