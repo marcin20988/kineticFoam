@@ -127,10 +127,14 @@ int main(int argc, char *argv[])
         volScalarField J2("J2", KM.J2());
         volScalarField J3("J3", KM.J3());
         volScalarField J4("J4", KM.J4());
+        volScalarField beta1("beta_1", KM.beta1());
+        volScalarField beta2("beta_1", KM.beta2());
         J1.write();
         J2.write();
         J3.write();
         J4.write();
+        beta1.write();
+        beta2.write();
     }
 
 

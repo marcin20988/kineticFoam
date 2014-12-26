@@ -87,13 +87,28 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F ("F-total", F1);
         dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 100.0);
         F.boundaryField() = vector(0,0,0);
+        F1.boundaryField() = vector(0,0,0);
         /*F.component(0) = min(F.component(0), F_tres);;*/
         //F.component(0) = max(F.component(0), -F_tres);;
         //F.component(1) = min(F.component(1), F_tres);;
         //F.component(1) = min(F.component(1), F_tres);;
         //F.component(2) = max(F.component(2), -F_tres);;
         //F.component(2) = max(F.component(2), -F_tres);;
+        
+        const fvPatchList& patches = mesh.boundary();
 
+        forAll(patches, patchi)
+        {
+                const fvPatch& curPatch = patches[patchi];
+                if (isType<wallFvPatch>(curPatch))
+                {
+                        forAll(curPatch, facei)
+                        {
+                                label faceCelli = curPatch.faceCells()[facei];
+                                F1[faceCelli] = vector(0, 0, 0);
+                        }
+                }
+        }
         forAll(mesh.C(), celli)
         {
                 scalar count = 1.0;
@@ -119,24 +134,25 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 F[celli].y() = max(F[celli].y(), -500.0);
                 //F[celli].z() = max(F[celli].z(), -500.0);
         }
+        F = 0.5 * (F + F_old);
 	volScalarField Fmag = mag(F);
 
 	
 	// deleta force next to wall
-        const fvPatchList& patches = mesh.boundary();
+        //const fvPatchList& patches = mesh.boundary();
 
-        forAll(patches, patchi)
-        {
-                const fvPatch& curPatch = patches[patchi];
-                if (isType<wallFvPatch>(curPatch))
-                {
-                        forAll(curPatch, facei)
-                        {
-                                label faceCelli = curPatch.faceCells()[facei];
-                                F[faceCelli] = vector(0, 0, 0);
-                        }
-                }
-        }
+        //forAll(patches, patchi)
+        //{
+                //const fvPatch& curPatch = patches[patchi];
+                //if (isType<wallFvPatch>(curPatch))
+                //{
+                        //forAll(curPatch, facei)
+                        //{
+                                //label faceCelli = curPatch.faceCells()[facei];
+                                //F[faceCelli] = vector(0, 0, 0);
+                        //}
+                //}
+        //}
 	//-------------------------
 
         if(mesh.time().outputTime())
@@ -146,6 +162,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
             F3.write();
             F.write();
         }
+        F_old = F;
 
 	Info << "------------------------------------" << endl;
 	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
