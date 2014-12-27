@@ -225,7 +225,7 @@ void kineticFluidModel::update
   // in the derivation drag coefficient is taken in units of s^-1
   // and is strictly negative
   volScalarField cd = - fluid_.dragCoeff() 
-      / dispersedPhase().rho() * dispersedPhase();
+      / dispersedPhase().rho() * dispersedPhase() * 0;
 
   Info << "Collisional relaxation time: " 
     << tau.weightedAverage(tau.mesh().V()).value()
