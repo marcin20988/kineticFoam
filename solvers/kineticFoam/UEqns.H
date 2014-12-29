@@ -47,7 +47,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi1, U1)
           - fvm::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), U1)
           + phase1.turbulence().divDevReff(U1)
-          + 2.0 / 3.0 * fvc::grad(phase1.turbulence().k() * alpha1)
+          //+ 2.0 / 3.0 * fvc::grad(phase1.turbulence().k() * alpha1)
          ==
           - fvm::Sp(dragCoeff/rho1, U1)
           - alpha1*alpha2/rho1
@@ -86,7 +86,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
 
 
-	volVectorField F ("F-total", F1 + F2 + F3);
+	volVectorField F ("F-total", F1 + F3);
 	volVectorField F0 ("0", F);
         dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 100.0);
         F.boundaryField() = vector(0, 0, 0);
@@ -137,7 +137,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 }
                 F[celli] /= count;
 
-                //if(mesh.C()[celli].z() < 0.1 || mesh.C()[celli].z() > 3.5)
+                //if(mesh.C()[celli].z() < 0.1 || mesh.C()[celli].z() > 3.1)
                 //{
                     //F[celli] = vector(0, 0, 0);
                 //}
@@ -150,7 +150,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 //F[celli].y() = max(F[celli].y(), -1000.0);
                 //F[celli].z() = max(F[celli].z(), -1000.0);
         }
-        F = 0.5 * (F + F_old);
+        //F = 0.5 * (F + F_old);
 	volScalarField Fmag = mag(F);
 
 	
