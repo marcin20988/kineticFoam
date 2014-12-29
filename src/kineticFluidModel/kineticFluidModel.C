@@ -225,10 +225,10 @@ void kineticFluidModel::update
   // in the derivation drag coefficient is taken in units of s^-1
   // and is strictly negative
   volScalarField cd = - fluid_.dragCoeff() 
-      / dispersedPhase().rho() * dispersedPhase() * 0;
-  cd = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
-      * fluid_.otherPhase(dispersedPhase()).d() 
-      / (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
+      / dispersedPhase().rho() * dispersedPhase();
+  //cd = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
+      //* fluid_.otherPhase(dispersedPhase()).d() 
+      /// (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
 
 
 
