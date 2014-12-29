@@ -226,14 +226,19 @@ void kineticFluidModel::update
   // and is strictly negative
   volScalarField cd = - fluid_.dragCoeff() 
       / dispersedPhase().rho() * dispersedPhase() * 0;
+  cd = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
+      * fluid_.otherPhase(dispersedPhase()).d() 
+      / (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
+
+
 
   Info << "Collisional relaxation time: " 
     << tau.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(tau).value()
     <<" max: " << max(tau).value() << endl;
-  /*Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
+  Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(cd).value()
-    <<" max: " << max(cd).value() << endl;*/
+    <<" max: " << max(cd).value() << endl;
 
   E1_ = 
     (
