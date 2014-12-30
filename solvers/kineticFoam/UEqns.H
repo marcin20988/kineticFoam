@@ -103,18 +103,19 @@ volScalarField dragCoeff(fluid.dragCoeff());
         
         const fvPatchList& patches = mesh.boundary();
 
-        //forAll(patches, patchi)
-        //{
-                //const fvPatch& curPatch = patches[patchi];
-                //if (isType<wallFvPatch>(curPatch))
-                //{
-                        //forAll(curPatch, facei)
-                        //{
-                                //label faceCelli = curPatch.faceCells()[facei];
-                                //F1[faceCelli] = vector(0, 0, 0);
-                        //}
-                //}
-        //}
+        forAll(patches, patchi)
+        {
+                const fvPatch& curPatch = patches[patchi];
+                if (!isType<wallFvPatch>(curPatch))
+                {
+                        forAll(curPatch, facei)
+                        {
+                                label faceCelli = curPatch.faceCells()[facei];
+                                F0[faceCelli] = vector(0, 0, 0);
+                                F[faceCelli] = vector(0, 0, 0);
+                        }
+                }
+        }
         //forAll(mesh.C(), celli)
         //{
                 //F0[celli].x() = min(F0[celli].x(), 500.0);
