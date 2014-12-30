@@ -253,6 +253,9 @@ void kineticFluidModel::update
 
   E2_ = 3.0 * tau * epsilon / (4.0 * pow(k, 2) * (1.0 - 4.0 * tau * cd));
 
+  E1_.boundaryField() = 0;
+  E2_.boundaryField() = 0;
+
 
   Info << "E1: " << E1_.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(E1_).value()
