@@ -88,12 +88,12 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
 	volVectorField F ("F-total", F1 + F3);
 	volVectorField F0 ("0", F);
-        dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 100.0);
-        F.boundaryField() = vector(0, 0, 0);
-        F0.boundaryField() = vector(0, 0, 0);
-        F1.boundaryField() = vector(0, 0, 0);
-        F3.boundaryField() = vector(0, 0, 0);
-        F2.boundaryField() = vector(0, 0, 0);
+        dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 1000.0);
+        //F.boundaryField() = vector(0, 0, 0);
+        //F0.boundaryField() = vector(0, 0, 0);
+        //F1.boundaryField() = vector(0, 0, 0);
+        //F3.boundaryField() = vector(0, 0, 0);
+        //F2.boundaryField() = vector(0, 0, 0);
         /*F.component(0) = min(F.component(0), F_tres);;*/
         //F.component(0) = max(F.component(0), -F_tres);;
         //F.component(1) = min(F.component(1), F_tres);;
@@ -117,21 +117,21 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //}
         //forAll(mesh.C(), celli)
         //{
-                //F0[celli].x() = min(F0[celli].x(), 5000.0);
-                //F0[celli].y() = min(F0[celli].y(), 5000.0);
-                //F0[celli].z() = min(F0[celli].z(), 5000.0);
+                //F0[celli].x() = min(F0[celli].x(), 500.0);
+                //F0[celli].y() = min(F0[celli].y(), 500.0);
+                //F0[celli].z() = min(F0[celli].z(), 500.0);
 
-                //F0[celli].x() = max(F0[celli].x(), -5000.0);
-                //F0[celli].y() = max(F0[celli].y(), -5000.0);
-                //F0[celli].z() = max(F0[celli].z(), -5000.0);
+                //F0[celli].x() = max(F0[celli].x(), -500.0);
+                //F0[celli].y() = max(F0[celli].y(), -500.0);
+                //F0[celli].z() = max(F0[celli].z(), -500.0);
 
-                //F[celli].x() = min(F[celli].x(), 5000.0);
-                //F[celli].y() = min(F[celli].y(), 5000.0);
-                //F[celli].z() = min(F[celli].z(), 5000.0);
+                //F[celli].x() = min(F[celli].x(), 500.0);
+                //F[celli].y() = min(F[celli].y(), 500.0);
+                //F[celli].z() = min(F[celli].z(), 500.0);
 
-                //F[celli].x() = max(F[celli].x(), -5000.0);
-                //F[celli].y() = max(F[celli].y(), -5000.0);
-                //F[celli].z() = max(F[celli].z(), -5000.0);
+                //F[celli].x() = max(F[celli].x(), -500.0);
+                //F[celli].y() = max(F[celli].y(), -500.0);
+                //F[celli].z() = max(F[celli].z(), -500.0);
         //}
         forAll(mesh.C(), celli)
         {
@@ -158,6 +158,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 //F[celli].z() = max(F[celli].z(), -1000.0);
         }
         F = 0.5 * (F + F_old);
+
 	volScalarField Fmag = mag(F);
 
 	
