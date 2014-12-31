@@ -58,6 +58,8 @@ class relaxationTime
     const phaseModel& dispersedPhase_;
     const kineticFluidModel& KM_;
 
+    volScalarField tau_;
+
         //- Description of data_
 
 
@@ -130,11 +132,11 @@ public:
 
 
     // Member Functions
-    virtual tmp<volScalarField> turbulent() const=0;
+    virtual tmp<volScalarField> turbulent() = 0;
 
-    virtual tmp<volScalarField> laminar() const=0;
+    virtual tmp<volScalarField> laminar() = 0;
 
-    virtual tmp<volScalarField> total() const=0;
+    virtual tmp<volScalarField> total() = 0;
 
     // Access
 

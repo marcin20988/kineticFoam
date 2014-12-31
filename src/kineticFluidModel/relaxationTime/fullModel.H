@@ -109,11 +109,11 @@ public:
 
         // Access
 
-	tmp<volScalarField> laminar() const;
+	tmp<volScalarField> laminar();
 
-	tmp<volScalarField> turbulent() const;
+	tmp<volScalarField> turbulent();
 
-	tmp<volScalarField> total() const;
+	tmp<volScalarField> total();
 
         // Check
 

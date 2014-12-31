@@ -124,11 +124,11 @@ namespace Foam
 
     tmp<volScalarField> pressureCorrection() const;
 
-    tmp<volScalarField> tauLaminar() const;
+    tmp<volScalarField> tauLaminar();
 
-    tmp<volScalarField> tauTurbulent() const;
+    tmp<volScalarField> tauTurbulent();
 
-    tmp<volScalarField> tauTotal() const;
+    tmp<volScalarField> tauTotal();
 
     tmp<volScalarField> E1() const
     {
@@ -183,7 +183,7 @@ namespace Foam
     tmp<volScalarField> J4() const;
 
     // delta g vector
-    tmp<volVectorField> deltaG() const;
+    tmp<volVectorField> deltaG();
 	
     // radial distribution function at contact
     tmp<volScalarField> g0() const;

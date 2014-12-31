@@ -73,7 +73,7 @@ fullModel::fullModel
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
 
-tmp<volScalarField> fullModel::turbulent() const
+tmp<volScalarField> fullModel::turbulent()
 {
   volScalarField nu = dispersedPhase_.turbulence().nut();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
@@ -95,7 +95,7 @@ tmp<volScalarField> fullModel::turbulent() const
     );
 }
 
-tmp<volScalarField> fullModel::laminar() const
+tmp<volScalarField> fullModel::laminar()
 {
   volScalarField nu = dispersedPhase_.nu();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
@@ -117,7 +117,7 @@ tmp<volScalarField> fullModel::laminar() const
     );
 }
 
-tmp<volScalarField> fullModel::total() const
+tmp<volScalarField> fullModel::total()
 {
   Info << "Using effective viscosity to calculate relaxation time" << endl;
   volScalarField nu = dispersedPhase_.turbulence().nuEff();
@@ -133,13 +133,10 @@ tmp<volScalarField> fullModel::total() const
 	      maxTau_
       );
 
-  volScalarField tau = A / (1 + A * cd);
+  tau_ = max(A / (1 + A * cd), minTau_);
+  tau_.correctBoundaryConditions();
 
-  return max
-    (
-        tau
-      , minTau_
-    );
+  return tau_;
 }
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 

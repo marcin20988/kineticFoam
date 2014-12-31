@@ -93,7 +93,19 @@ relaxationTime::relaxationTime
   fluid_(fluid),
   dispersedPhaseName_(dispersedPhaseName),
   dispersedPhase_(dispersedPhase),
-  KM_(KM)
+  KM_(KM),
+  tau_
+  (
+   IOobject
+   (
+    "tau",
+    KM.dispersedPhase().mesh().time().timeName(),
+    KM.dispersedPhase().mesh(),
+    IOobject::MUST_READ,
+    IOobject::AUTO_WRITE
+   ),
+   KM.dispersedPhase().mesh()
+  )
 {
 };
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

@@ -86,7 +86,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
 
 
-	volVectorField F ("F-total", F1 + F3);
+	F = F1 + F3;
 	volVectorField F0 ("0", F);
         dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 1000.0);
         //F.boundaryField() = vector(0, 0, 0);
@@ -103,19 +103,19 @@ volScalarField dragCoeff(fluid.dragCoeff());
         
         const fvPatchList& patches = mesh.boundary();
 
-        forAll(patches, patchi)
-        {
-                const fvPatch& curPatch = patches[patchi];
-                if (!isType<wallFvPatch>(curPatch))
-                {
-                        forAll(curPatch, facei)
-                        {
-                                label faceCelli = curPatch.faceCells()[facei];
-                                F0[faceCelli] = vector(0, 0, 0);
-                                F[faceCelli] = vector(0, 0, 0);
-                        }
-                }
-        }
+        //forAll(patches, patchi)
+        //{
+                //const fvPatch& curPatch = patches[patchi];
+                //if (!isType<wallFvPatch>(curPatch))
+                //{
+                        //forAll(curPatch, facei)
+                        //{
+                                //label faceCelli = curPatch.faceCells()[facei];
+                                //F0[faceCelli] = vector(0, 0, 0);
+                                //F[faceCelli] = vector(0, 0, 0);
+                        //}
+                //}
+        //}
         //forAll(mesh.C(), celli)
         //{
                 //F0[celli].x() = min(F0[celli].x(), 500.0);
@@ -136,14 +136,14 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //}
         forAll(mesh.C(), celli)
         {
-                scalar count = 1.0;
-                forAll(mesh.cellCells()[celli], cellj)
-                {
-                    label n_id = mesh.cellCells()[celli][cellj];
-                    count += 1.0;
-                    F[celli] += F0[n_id];
-                }
-                F[celli] /= count;
+                //scalar count = 1.0;
+                //forAll(mesh.cellCells()[celli], cellj)
+                //{
+                    //label n_id = mesh.cellCells()[celli][cellj];
+                    //count += 1.0;
+                    //F[celli] += F0[n_id];
+                //}
+                //F[celli] /= count;
 
                 //if(mesh.C()[celli].z() < 0.2 || mesh.C()[celli].z() > 3.0)
                 //{
@@ -158,7 +158,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 //F[celli].y() = max(F[celli].y(), -1000.0);
                 //F[celli].z() = max(F[celli].z(), -1000.0);
         }
-        F = 0.5 * (F + F_old);
+        //F = 0.5 * (F + F_old);
 
 	volScalarField Fmag = mag(F);
 
@@ -185,7 +185,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
             F1.write();
             F2.write();
             F3.write();
-            F.write();
+            //F.write();
         }
         F_old = F;
 

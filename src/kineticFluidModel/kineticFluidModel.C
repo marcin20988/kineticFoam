@@ -79,11 +79,11 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
     "E1",
     mesh_.time().timeName(),
     mesh_,
-    IOobject::NO_READ,
+    IOobject::MUST_READ,
     IOobject::AUTO_WRITE
    ),
-   mesh_,
-   dimensionedScalar("E1", dimless, 0.0)
+   mesh_
+   //dimensionedScalar("E1", dimless, 0.0)
   ),
   E2_
   (
@@ -92,11 +92,11 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
     "E2",
     mesh_.time().timeName(),
     mesh_,
-    IOobject::NO_READ,
+    IOobject::MUST_READ,
     IOobject::AUTO_WRITE
    ),
-   mesh_,
-   dimensionedScalar("E2", pow(dimLength, -2) / pow(dimTime, -2), 0.0)
+   mesh_
+   //dimensionedScalar("E2", pow(dimLength, -2) / pow(dimTime, -2), 0.0)
   ),
   a_
   (
@@ -253,8 +253,9 @@ void kineticFluidModel::update
 
   E2_ = 3.0 * tau * epsilon / (4.0 * pow(k, 2) * (1.0 - 4.0 * tau * cd));
 
-  E1_.boundaryField() = 0;
-  E2_.boundaryField() = 0;
+  E1_.correctBoundaryConditions();
+  E2_.correctBoundaryConditions();
+  //E2_.boundaryField() = 0;
 
 
   Info << "E1: " << E1_.weightedAverage(tau.mesh().V()).value()
@@ -357,17 +358,17 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 }
 
 
-tmp<volScalarField> kineticFluidModel::tauTurbulent() const
+tmp<volScalarField> kineticFluidModel::tauTurbulent()
 {
     return tau_ -> turbulent();
 }
 
-tmp<volScalarField> kineticFluidModel::tauLaminar() const
+tmp<volScalarField> kineticFluidModel::tauLaminar()
 {
     return tau_ -> laminar();
 }
 
-tmp<volScalarField> kineticFluidModel::tauTotal() const
+tmp<volScalarField> kineticFluidModel::tauTotal()
 {
     return tau_ -> total();
 }
@@ -610,7 +611,7 @@ tmp<volScalarField> kineticFluidModel::J4() const
 	return T_ * j4;
 }
 
-tmp<volVectorField> kineticFluidModel::deltaG() const
+tmp<volVectorField> kineticFluidModel::deltaG()
 {
 	volScalarField alpha = dispersedPhase();
 	volScalarField tau = tau_ -> total();
