@@ -271,7 +271,7 @@ void kineticFluidModel::update
     <<" max: " << max(a_).value() << endl;
 
   deltaG_ = deltaG();
-  deltaG_.boundaryField() = vector(0, 0, 0);
+  //deltaG_.boundaryField() = vector(0, 0, 0);
 
   scalar treshold = 1e04;
   //deltaG_.component(0) =
@@ -521,7 +521,7 @@ tmp<volScalarField> kineticFluidModel::J2() const
 	volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
 
         volScalarField j2 = beta3() + pow(a, 2) * beta4();
-        j2.boundaryField() = 0;
+        //j2.boundaryField() = 0;
         // deleta force next to wall
         const fvPatchList& patches = j2.mesh().boundary();
 
@@ -556,7 +556,7 @@ tmp<volScalarField> kineticFluidModel::J3() const
 		+ beta9() * pow(a, -2)
 		+ beta10()
 		+ beta11() * pow(a, 2);
-        j3.boundaryField() = 0;
+        //j3.boundaryField() = 0;
         // deleta force next to wall
         const fvPatchList& patches = j3.mesh().boundary();
 
@@ -590,7 +590,7 @@ tmp<volScalarField> kineticFluidModel::J4() const
 		+ beta15() * pow(a, -2)
 		+ beta16()
 		+ beta17() * pow(a, 2);
-        j4.boundaryField() = 0;
+        //j4.boundaryField() = 0;
         // deleta force next to wall
         const fvPatchList& patches = j4.mesh().boundary();
 
@@ -713,11 +713,11 @@ tmp<volVectorField> kineticFluidModel::deltaG()
         //g4.write();
         //g5.write();
 
-        g1.boundaryField() = vector(0,0,0);
-        g2.boundaryField() = vector(0,0,0);
-        g3.boundaryField() = vector(0,0,0);
-        g4.boundaryField() = vector(0,0,0);
-        g5.boundaryField() = vector(0,0,0);
+        //g1.boundaryField() = vector(0,0,0);
+        //g2.boundaryField() = vector(0,0,0);
+        //g3.boundaryField() = vector(0,0,0);
+        //g4.boundaryField() = vector(0,0,0);
+        //g5.boundaryField() = vector(0,0,0);
         //forAll(patches, patchi)
         //{
                 //const fvPatch& curPatch = patches[patchi];

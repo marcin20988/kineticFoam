@@ -73,7 +73,13 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //volScalarField k = fluid.otherPhase(KM.dispersedPhase()).turbulence().k();
         //volScalarField epsilon = fluid.otherPhase(KM.dispersedPhase()).turbulence().epsilon();
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
-        volScalarField k = KM.dispersedPhase().turbulence().k();
+        volScalarField k0 = KM.dispersedPhase().turbulence().k();
+        volScalarField k =
+            min(
+                k0,
+                pow(mag(KM.dispersedPhase().U()), 2)
+            );
+        k.boundaryField() = k0.boundaryField();
 
 	//-------------------------turbulent only
 	int updateCount = 5;
@@ -101,7 +107,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //F.component(2) = max(F.component(2), -F_tres);;
         //F.component(2) = max(F.component(2), -F_tres);;
         
-        const fvPatchList& patches = mesh.boundary();
+        //const fvPatchList& patches = mesh.boundary();
 
         //forAll(patches, patchi)
         //{
@@ -160,7 +166,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
         }
         //F = 0.5 * (F + F_old);
 
-	volScalarField Fmag = mag(F);
+
 
 	
 	// deleta force next to wall
@@ -180,6 +186,8 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //}
 	//-------------------------
 
+        F.correctBoundaryConditions();
+	volScalarField Fmag = mag(F);
         if(mesh.time().outputTime())
         {
             F1.write();
