@@ -43,6 +43,7 @@ Description
 int main(int argc, char *argv[])
 {
     argList::noParallel();
+    timeSelector::addOptions();
     #include "setRootCase.H"
 
     #include "createTime.H"
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 
         int updateCount = 5;
         for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
+        Info << "Updated" << endl;
 
         volScalarField cd
             (
@@ -98,19 +100,19 @@ int main(int argc, char *argv[])
             );
 
 
-        volScalarField correctedViscosity
-            (
-                "dNut",
-                8.0 / 9.0 
-                * KM.a() * (1.0 / (KM.E1() + 2.0 * k * KM.E2())) * pow(k, 2)
-            );
+        //volScalarField correctedViscosity
+            //(
+                //"dNut",
+                //8.0 / 9.0 
+                //* KM.a() * (1.0 / (KM.E1() + 2.0 * k * KM.E2())) * pow(k, 2)
+            //);
 
-        volScalarField ratio
-            (
-                "nutCorrRatio",
-                0.5 * correctedViscosity 
-                / KM.dispersedPhase().turbulence().nuEff()
-            );
+        //volScalarField ratio
+            //(
+                //"nutCorrRatio",
+                //0.5 * correctedViscosity 
+                /// KM.dispersedPhase().turbulence().nuEff()
+            //);
 
         volScalarField tau
             (
@@ -120,11 +122,18 @@ int main(int argc, char *argv[])
 
         cd.write();
         dp.write();
-        ratio.write();
-        correctedViscosity.write();
+        //ratio.write();
+        //correctedViscosity.write();
         volScalarField X("X", pressureCorrFactor);
         X.write();
         tau.write();
+
+	volScalarField a
+            (
+                "a-field",
+                mag(KM.dispersedPhase().U()) 
+                / sqrt(3.0 / (8.0 * k))
+            );
 
         volScalarField J1("J1", KM.J1());
         volScalarField J2("J2", KM.J2());
@@ -138,6 +147,7 @@ int main(int argc, char *argv[])
         J4.write();
         beta1.write();
         beta2.write();
+        a.write();
     }
 
 

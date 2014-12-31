@@ -73,22 +73,32 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //volScalarField k = fluid.otherPhase(KM.dispersedPhase()).turbulence().k();
         //volScalarField epsilon = fluid.otherPhase(KM.dispersedPhase()).turbulence().epsilon();
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
-        volScalarField k0 = KM.dispersedPhase().turbulence().k();
-        volScalarField k =
-            min(
-                k0,
-                pow(mag(KM.dispersedPhase().U()), 2)
-            );
-        k.boundaryField() = k0.boundaryField();
+        volScalarField k = KM.dispersedPhase().turbulence().k();
+        dimensionedScalar maxT("maxT", k.dimensions(), 10);
+        dimensionedScalar maxEps("maxT", epsilon.dimensions(), 100);
+        k = min(k, maxT);
+        epsilon = min(epsilon, maxEps);
+
+        //volScalarField k =
+            //min(
+                //k0,
+                //pow(mag(KM.dispersedPhase().U()), 2)
+            //);
+        //k.boundaryField() = k0.boundaryField();
 
 	//-------------------------turbulent only
 	int updateCount = 5;
 	for(int i = 0; i < updateCount; i++) KM.update(k, epsilon, 0);
+
+        Info << "Calculating pressure correction" << endl;
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
 	
+        Info << "Calculating F1" << endl;
 	volVectorField F1 ("F1", KM.F1(alphaPhi2));
+        Info << "Calculating F2" << endl;
 	volVectorField F2 ("F2", KM.F2(alphaPhi2));
+        Info << "Calculating F3" << endl;
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
 
 

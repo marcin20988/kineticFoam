@@ -84,7 +84,7 @@ tmp<volScalarField> fullModel::turbulent()
       min
       (
 	      27.0 * nu / ( 8.0 * k)
-	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      * (1.0 + KM_.E1() + 2.0 * KM_.E2()),
 	      maxTau_
       );
 
@@ -106,7 +106,7 @@ tmp<volScalarField> fullModel::laminar()
       min
       (
 	      27.0 * nu / ( 8.0 * k)
-	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      * (1.0 + KM_.E1() + 2.0 * KM_.E2()),
 	      maxTau_
       );
 
@@ -129,7 +129,7 @@ tmp<volScalarField> fullModel::total()
       min
       (
 	      27.0 * nu / ( 16.0 * k)
-	      * (1.0 + KM_.E1() + 2.0 * k * KM_.E2()),
+	      * (1.0 + KM_.E1() + 2.0 * KM_.E2()),
 	      maxTau_
       );
 
