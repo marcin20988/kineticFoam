@@ -157,14 +157,14 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         forAll(mesh.C(), celli)
         {
-                //scalar count = 1.0;
-                //forAll(mesh.cellCells()[celli], cellj)
-                //{
-                    //label n_id = mesh.cellCells()[celli][cellj];
-                    //count += 1.0;
-                    //F[celli] += F0[n_id];
-                //}
-                //F[celli] /= count;
+                scalar count = 1.0;
+                forAll(mesh.cellCells()[celli], cellj)
+                {
+                    label n_id = mesh.cellCells()[celli][cellj];
+                    count += 1.0;
+                    F[celli] += F0[n_id];
+                }
+                F[celli] /= count;
 
                 //if(mesh.C()[celli].z() < 0.2 || mesh.C()[celli].z() > 3.0)
                 //{

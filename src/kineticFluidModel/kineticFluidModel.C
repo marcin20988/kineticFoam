@@ -774,7 +774,7 @@ tmp<volVectorField> kineticFluidModel::deltaG()
                 //}
         //}
 
-	return  (g1 + g2 + g3) * 0;
+	return  (g1 + g2 + g3 + g4 + g5);
             //g_alpha * fvc::grad(alpha)
                 //+ g_epsilon * fvc::grad(epsilon_)
 		//+ g_T * fvc::grad(T_);
@@ -809,10 +809,10 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 		<<" max: " << max(j1).value() << endl;
 
 
-	volScalarField x = /*(deltaG_ & U) *
+	volScalarField x = (deltaG_ & U) *
 		(
 			dispersedPhase().d() * j3 / R / (mag(U) + smallU)
-		) +*/ j1;
+		) + j1;
 
 	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) * g0() * fvc::grad(x);
 }
