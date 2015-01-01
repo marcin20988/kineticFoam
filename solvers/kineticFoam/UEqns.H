@@ -133,6 +133,8 @@ volScalarField dragCoeff(fluid.dragCoeff());
                         }
                 }
         }
+
+        scalar maxF = KM.maxF();
         forAll(mesh.C(), celli)
         {
                 //F0[celli].x() = min(F0[celli].x(), 100.0);
@@ -143,13 +145,13 @@ volScalarField dragCoeff(fluid.dragCoeff());
                 //F0[celli].y() = max(F0[celli].y(), -100.0);
                 //F0[celli].z() = max(F0[celli].z(), -100.0);
 
-                F[celli].x() = min(F[celli].x(), 200.0);
-                F[celli].y() = min(F[celli].y(), 200.0);
-                F[celli].z() = min(F[celli].z(), 200.0);
+                F[celli].x() = min(F[celli].x(), maxF);
+                F[celli].y() = min(F[celli].y(), maxF);
+                F[celli].z() = min(F[celli].z(), maxF);
 
-                F[celli].x() = max(F[celli].x(), -200.0);
-                F[celli].y() = max(F[celli].y(), -200.0);
-                F[celli].z() = max(F[celli].z(), -200.0);
+                F[celli].x() = max(F[celli].x(), -maxF);
+                F[celli].y() = max(F[celli].y(), -maxF);
+                F[celli].z() = max(F[celli].z(), -maxF);
         }
 
         F.correctBoundaryConditions();

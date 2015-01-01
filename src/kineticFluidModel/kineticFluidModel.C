@@ -150,7 +150,8 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    mesh_,
    dimensionedVector("deltaG", dimless / dimLength, vector(0.0, 0.0, 0.0))
   ),
-  e_(readScalar(kineticFluidModelDict_.lookup("e")))
+  e_(readScalar(kineticFluidModelDict_.lookup("e"))),
+  maxF_(readScalar(kineticFluidModelDict_.lookup("maxF")))
 {}
 
 

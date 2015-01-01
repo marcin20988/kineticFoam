@@ -88,6 +88,8 @@ namespace Foam
     volVectorField deltaG_;
     // coefficient of restitution
     scalar e_;
+    // maximum value of total collisional force component
+    scalar maxF_;
 
   public:
 
@@ -187,6 +189,11 @@ namespace Foam
 	
     // radial distribution function at contact
     tmp<volScalarField> g0() const;
+
+    scalar maxF() const
+    {
+        return maxF_;
+    }
     
 
     // this given the force equal to gradient (J1 + u0 dot Delta g R sigma J_3 / u0)
