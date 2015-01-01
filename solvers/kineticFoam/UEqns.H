@@ -47,7 +47,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi1, U1)
           - fvm::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), U1)
           + phase1.turbulence().divDevReff(U1)
-          //+ 2.0 / 3.0 * fvc::grad(phase1.turbulence().k() * alpha1)
+          + 2.0 / 3.0 * fvc::grad(phase1.turbulence().k() * alpha1)
          ==
           - fvm::Sp(dragCoeff/rho1, U1)
           - alpha1*alpha2/rho1
@@ -74,10 +74,10 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //volScalarField epsilon = fluid.otherPhase(KM.dispersedPhase()).turbulence().epsilon();
         volScalarField epsilon = KM.dispersedPhase().turbulence().epsilon();
         volScalarField k = KM.dispersedPhase().turbulence().k();
-        dimensionedScalar maxT("maxT", k.dimensions(), 10);
-        dimensionedScalar maxEps("maxT", epsilon.dimensions(), 100);
-        k = min(k, maxT);
-        epsilon = min(epsilon, maxEps);
+        //dimensionedScalar maxT("maxT", k.dimensions(), 5);
+        //dimensionedScalar maxEps("maxT", epsilon.dimensions(), 10);
+        //k = min(k, maxT);
+        //epsilon = min(epsilon, maxEps);
 
         //volScalarField k =
             //min(
@@ -102,8 +102,9 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField F3 ("F3", KM.F3(alphaPhi2));
 
 
-	F = F1 + F3;
-	volVectorField F0 ("0", F);
+	F = F1 + F2 + F3;
+
+
         dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 1000.0);
         //F.boundaryField() = vector(0, 0, 0);
         //F0.boundaryField() = vector(0, 0, 0);
@@ -117,39 +118,43 @@ volScalarField dragCoeff(fluid.dragCoeff());
         //F.component(2) = max(F.component(2), -F_tres);;
         //F.component(2) = max(F.component(2), -F_tres);;
         
-        //const fvPatchList& patches = mesh.boundary();
+        const fvPatchList& patches = mesh.boundary();
 
-        //forAll(patches, patchi)
-        //{
-                //const fvPatch& curPatch = patches[patchi];
-                //if (!isType<wallFvPatch>(curPatch))
-                //{
-                        //forAll(curPatch, facei)
-                        //{
-                                //label faceCelli = curPatch.faceCells()[facei];
+        forAll(patches, patchi)
+        {
+                const fvPatch& curPatch = patches[patchi];
+                if (isType<wallFvPatch>(curPatch))
+                {
+                        forAll(curPatch, facei)
+                        {
+                                label faceCelli = curPatch.faceCells()[facei];
                                 //F0[faceCelli] = vector(0, 0, 0);
-                                //F[faceCelli] = vector(0, 0, 0);
-                        //}
-                //}
-        //}
-        //forAll(mesh.C(), celli)
-        //{
-                //F0[celli].x() = min(F0[celli].x(), 500.0);
-                //F0[celli].y() = min(F0[celli].y(), 500.0);
-                //F0[celli].z() = min(F0[celli].z(), 500.0);
+                                F[faceCelli] = vector(0, 0, 0);
+                        }
+                }
+        }
+        forAll(mesh.C(), celli)
+        {
+                //F0[celli].x() = min(F0[celli].x(), 100.0);
+                //F0[celli].y() = min(F0[celli].y(), 100.0);
+                //F0[celli].z() = min(F0[celli].z(), 100.0);
 
-                //F0[celli].x() = max(F0[celli].x(), -500.0);
-                //F0[celli].y() = max(F0[celli].y(), -500.0);
-                //F0[celli].z() = max(F0[celli].z(), -500.0);
+                //F0[celli].x() = max(F0[celli].x(), -100.0);
+                //F0[celli].y() = max(F0[celli].y(), -100.0);
+                //F0[celli].z() = max(F0[celli].z(), -100.0);
 
-                //F[celli].x() = min(F[celli].x(), 500.0);
-                //F[celli].y() = min(F[celli].y(), 500.0);
-                //F[celli].z() = min(F[celli].z(), 500.0);
+                F[celli].x() = min(F[celli].x(), 200.0);
+                F[celli].y() = min(F[celli].y(), 200.0);
+                F[celli].z() = min(F[celli].z(), 200.0);
 
-                //F[celli].x() = max(F[celli].x(), -500.0);
-                //F[celli].y() = max(F[celli].y(), -500.0);
-                //F[celli].z() = max(F[celli].z(), -500.0);
-        //}
+                F[celli].x() = max(F[celli].x(), -200.0);
+                F[celli].y() = max(F[celli].y(), -200.0);
+                F[celli].z() = max(F[celli].z(), -200.0);
+        }
+
+        F.correctBoundaryConditions();
+	volVectorField F0 ("F0", F);
+
         forAll(mesh.C(), celli)
         {
                 //scalar count = 1.0;
@@ -203,6 +208,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
             F1.write();
             F2.write();
             F3.write();
+            F0.write();
             //F.write();
         }
         F_old = F;
@@ -239,6 +245,11 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	  <<" max: " << max(Fmag).value()
 	  <<" dims: " << Fmag.dimensions()
 	  << endl;
+	Info << "F0: " << F0.weightedAverage(mesh.V()).value()
+	  <<" min: " << min(F0).value()
+	  <<" max: " << max(F0).value()
+	  <<" dims: " << F0.dimensions()
+	  << endl;
 	Info << "------------------------------------" << endl;
 
         U2Eqn =
@@ -247,10 +258,10 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi2, U2)
           - fvm::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), U2)
           + phase2.turbulence().divDevReff(U2)
-          //+ KM.divDevReff(U2)
+          + KM.divDevReff(U2)
          ==
           F 
-	  //- dp 
+	  - dp 
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2
            *(

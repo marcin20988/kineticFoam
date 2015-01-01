@@ -226,9 +226,12 @@ void kineticFluidModel::update
   // and is strictly negative
   volScalarField cd = - fluid_.dragCoeff() 
       / dispersedPhase().rho() * dispersedPhase();
-  //cd = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
-      //* fluid_.otherPhase(dispersedPhase()).d() 
-      /// (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
+
+  volScalarField cd_stokes = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
+      * fluid_.otherPhase(dispersedPhase()).d() 
+      / (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
+
+
 
 
 
@@ -236,9 +239,12 @@ void kineticFluidModel::update
     << tau.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(tau).value()
     <<" max: " << max(tau).value() << endl;
+  Info << "Stokes drag: " << cd_stokes.weightedAverage(tau.mesh().V()).value() << endl;
   Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(cd).value()
     <<" max: " << max(cd).value() << endl;
+  //Info << "using stokes drag" << endl;
+  //cd = cd_stokes;
 
   E1_ = 
     (
@@ -499,9 +505,9 @@ tmp<volScalarField> kineticFluidModel::J1() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                100.0
+                20.0
             );
-        a = max(a, 0.5);
+        a = max(a, 0.1);
 
 	Info << "a-function coefficient: " 
 		<< a.weightedAverage(a.mesh().V()).value()
@@ -535,9 +541,9 @@ tmp<volScalarField> kineticFluidModel::J2() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                100.0
+                20.0
             );
-        a = max(a, 0.5);
+        a = max(a, 0.1);
 
         volScalarField j2 = beta3() + pow(a, 2) * beta4();
         //j2.boundaryField() = 0;
@@ -567,9 +573,9 @@ tmp<volScalarField> kineticFluidModel::J3() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                100.0
+                20.0
             );
-        a = max(a, 0.5);
+        a = max(a, 0.1);
     
 
 	Info << "a-function coefficient: " 
@@ -614,9 +620,9 @@ tmp<volScalarField> kineticFluidModel::J4() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                100.0
+                20.0
             );
-        a = max(a, 0.5);
+        a = max(a, 0.1);
 
         volScalarField j4 = 
 		(
@@ -768,7 +774,7 @@ tmp<volVectorField> kineticFluidModel::deltaG()
                 //}
         //}
 
-	return  (g1 + g2 + g3 + g4) * 0;
+	return  (g1 + g2 + g3) * 0;
             //g_alpha * fvc::grad(alpha)
                 //+ g_epsilon * fvc::grad(epsilon_)
 		//+ g_T * fvc::grad(T_);
