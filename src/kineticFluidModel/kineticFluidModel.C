@@ -177,6 +177,7 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
   aMin_(kineticFluidModelDict_.lookupOrDefault("aMin", 0.1)),
   aMax_(kineticFluidModelDict_.lookupOrDefault("aMax", 20)),
+  scaleF_(kineticFluidModelDict_.lookupOrDefault("scalrF", 1)),
   cdTauForces_(kineticFluidModelDict_.lookup("cdTauForces")),
   useStokesDrag_(kineticFluidModelDict_.lookup("useStokesDrag")),
   useViscosityCorrection_(kineticFluidModelDict_.lookup("useViscosityCorrection")),
@@ -757,6 +758,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     {
         F_total_ = alpha * (f2 + f4) + f3 + f5;
     }
+    F_total_ *= scaleF_;
 
     F_total_.correctBoundaryConditions();
 

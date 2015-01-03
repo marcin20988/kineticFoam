@@ -96,6 +96,9 @@ namespace Foam
     scalar aMin_;
     scalar aMax_;
 
+    // just to play with; a scalar that multiplies total force
+    scalar scaleF_;
+
     //in deltaG should cd and tau dependent forces be included?
     Switch cdTauForces_;
 
