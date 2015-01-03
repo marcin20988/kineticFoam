@@ -111,6 +111,9 @@ namespace Foam
     // delete collisional force on the wall
     Switch wallTreatment_;
 
+    // use deltaG_ forces?
+    Switch useG_;
+
 
   public:
 
