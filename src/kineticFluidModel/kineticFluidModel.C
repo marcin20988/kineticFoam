@@ -152,14 +152,14 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   (
    IOobject
    (
-    "deltaG_",
+    "deltaG",
     mesh_.time().timeName(),
     mesh_,
-    IOobject::NO_READ,
+    IOobject::MUST_READ,
     IOobject::AUTO_WRITE
    ),
-   mesh_,
-   dimensionedVector("deltaG", dimless / dimLength, vector(0.0, 0.0, 0.0))
+   mesh_
+   //dimensionedVector("deltaG", dimless / dimLength, vector(0.0, 0.0, 0.0))
   ),
   e_(readScalar(kineticFluidModelDict_.lookup("e"))),
   maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
@@ -228,9 +228,9 @@ void kineticFluidModel::update
   Info << "Updating kinetic model" << endl;
   T_ = T;
   epsilon_ = epsilon;
-  volScalarField k =  T;//dispersedPhase().turbulence().k();
-  //volScalarField epsilon =  dispersedPhase().turbulence().epsilon();
+  volScalarField k =  T;
 
+  // value of check dictates which tau is to be used
   volScalarField tau = tau_ -> total();
   if(check == 0)
   {
@@ -244,12 +244,11 @@ void kineticFluidModel::update
   volScalarField cd = - fluid_.dragCoeff() 
       / dispersedPhase().rho() * dispersedPhase();
 
-  volScalarField cd_stokes = - 3.0 * 3.14 * fluid_.otherPhase(dispersedPhase()).nu()
+  // Stokes drag formula
+  volScalarField cd_stokes = - 3.0 * 3.14 
+      * fluid_.otherPhase(dispersedPhase()).nu()
       * fluid_.otherPhase(dispersedPhase()).d() 
       / (3.13 / 6.0 * pow(fluid_.otherPhase(dispersedPhase()).d(), 3));
-
-
-
 
 
   Info << "Collisional relaxation time: " 
@@ -260,8 +259,11 @@ void kineticFluidModel::update
   Info << "Drag coefficient: " << cd.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(cd).value()
     <<" max: " << max(cd).value() << endl;
-  //Info << "using stokes drag" << endl;
-  //cd = cd_stokes;
+  if(useStokesDrag_)
+  {
+    Info << "Using stokes drag" << endl;
+    cd = cd_stokes;
+  }
 
   E1_ = 
     (
