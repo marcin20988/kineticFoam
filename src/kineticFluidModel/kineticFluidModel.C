@@ -83,7 +83,6 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
     IOobject::AUTO_WRITE
    ),
    mesh_
-   //dimensionedScalar("E1", dimless, 0.0)
   ),
   E2_
   (
@@ -96,7 +95,19 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
     IOobject::AUTO_WRITE
    ),
    mesh_
-   //dimensionedScalar("E2", pow(dimLength, -2) / pow(dimTime, -2), 0.0)
+  ),
+  R_
+  (
+   IOobject
+   (
+    "E2",
+    mesh_.time().timeName(),
+    mesh_,
+    IOobject::NO_READ,
+    IOobject::NO_WRITE
+   ),
+   mesh_,
+   dimensionedScalar("R",dimless , 0.0)
   ),
   a_
   (
@@ -153,7 +164,10 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   e_(readScalar(kineticFluidModelDict_.lookup("e"))),
   maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
   aMin_(kineticFluidModelDict_.lookupOrDefault("aMin", 0.1)),
-  aMax_(kineticFluidModelDict_.lookupOrDefault("aMax", 20))
+  aMax_(kineticFluidModelDict_.lookupOrDefault("aMax", 20)),
+  cdTauForces_(kineticFluidModelDict_.lookup("cdTauForces")),
+  useStokesDrag_(kineticFluidModelDict_.lookup("useStokesDrag")),
+  useViscosityCorrection_(kineticFluidModelDict_.lookup("useViscosityCorrection"))
 {}
 
 
@@ -266,8 +280,8 @@ void kineticFluidModel::update
 
   E1_.correctBoundaryConditions();
   E2_.correctBoundaryConditions();
-  //E2_.boundaryField() = 0;
 
+  R_ = 1.0 + E1_ + E2_;
 
   Info << "E1: " << E1_.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(E1_).value()
@@ -275,6 +289,9 @@ void kineticFluidModel::update
   Info << "E2: " << E2_.weightedAverage(tau.mesh().V()).value()
     <<" min: " << min(E2_).value()
     <<" max: " << max(E2_).value() << endl;
+  Info << "R: " << R_.weightedAverage(tau.mesh().V()).value()
+    <<" min: " << min(R_).value()
+    <<" max: " << max(R_).value() << endl;
   
   a_ = 2.0 * tau / (k *(1.0 - 6.0 * tau * cd));
   Info << "a: " << a_.weightedAverage(tau.mesh().V()).value()
@@ -282,49 +299,6 @@ void kineticFluidModel::update
     <<" max: " << max(a_).value() << endl;
 
   deltaG_ = deltaG();
-  //deltaG_.boundaryField() = vector(0, 0, 0);
-
-  scalar treshold = 1e04;
-  //deltaG_.component(0) =
-      //min(treshold, deltaG_.component(0));
-  //deltaG_.component(0) =
-      //max(-treshold, deltaG_.component(0));
-  forAll(deltaG_.mesh().V(), celli)
-  {
-      deltaG_[celli].x() = min(treshold, deltaG_[celli].x());
-      deltaG_[celli].x() = max(-treshold, deltaG_[celli].x());
-
-      deltaG_[celli].y() = min(treshold, deltaG_[celli].y());
-      deltaG_[celli].y() = max(-treshold, deltaG_[celli].y());
-
-      deltaG_[celli].z() = min(treshold, deltaG_[celli].z());
-      deltaG_[celli].z() = max(-treshold, deltaG_[celli].z());
-  }
-
-  //deltaG_.internalField().component(1) =
-      //min(1e04, deltaG_.internalField().component(1));
-  //deltaG_.internalField().component(1) =
-      //max(-1e04, deltaG_.internalField().component(1));
-
-  //deltaG_.internalField().component(2) =
-      //min(1e04, deltaG_.internalField().component(2));
-  //deltaG_.internalField().component(2) =
-      //max(-1e04, deltaG_.internalField().component(2));
-
-  //const fvPatchList& patches = deltaG_.mesh().boundary();
-
-  //forAll(patches, patchi)
-  //{
-      //const fvPatch& curPatch = patches[patchi];
-      //if (isType<wallFvPatch>(curPatch))
-      //{
-          //forAll(curPatch, facei)
-          //{
-              //label faceCelli = curPatch.faceCells()[facei];
-              //deltaG_[faceCelli] = vector(0, 0, 0);
-          //}
-      //}
-  //}
 
   Info << "deltaG: " << deltaG_.weightedAverage(tau.mesh().V()).value()
       <<" min: " << min(deltaG_).value()
@@ -334,7 +308,7 @@ void kineticFluidModel::update
 
 tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 {
-  volScalarField k =  temp();//dispersedPhase().turbulence().k();
+  volScalarField k =  temp();
 
   return (1.0 + E1_ + 10.0 / 3.0 * E2_) / (1.0 + E1_ + 2.0 * E2_);
 };
@@ -346,11 +320,18 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 
     volScalarField correctedViscosity = 0.5 * 8.0 / 9.0 
         * a_ * (1.0 / (1.0 + E1_ + 2.0 * E2_)) * pow(k, 2);
-    
+
     correctedViscosity += dispersedPhase().nu();
+
+    if(!useViscosityCorrection_)
+    {
+        correctedViscosity = dispersedPhase().turbulence().nut();
+    }
 
     volScalarField ratio = correctedViscosity 
         / dispersedPhase().turbulence().nuEff();
+
+
     Info << "Ratio of viscosity correction: " << ratio.weightedAverage(k.mesh().V()).value()
         <<" min: " << min(ratio).value()
         <<" max: " << max(ratio).value() << endl;
@@ -474,9 +455,9 @@ tmp<volScalarField> kineticFluidModel::J1() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                aMax
+                aMax_
             );
-        a = max(a, aMin);
+        a = max(a, aMin_);
 
 	Info << "a-function coefficient: " 
 		<< a.weightedAverage(a.mesh().V()).value()
@@ -493,9 +474,9 @@ tmp<volScalarField> kineticFluidModel::J2() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                aMax
+                aMax_
             );
-        a = max(a, aMin);
+        a = max(a, aMin_);
 
         volScalarField j2 = beta3() + pow(a, 2) * beta4();
 
@@ -508,9 +489,9 @@ tmp<volScalarField> kineticFluidModel::J3() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                aMax
+                aMax_
             );
-        a = max(a, aMin);
+        a = max(a, aMin_);
     
         volScalarField j3 = 
 		(
@@ -532,9 +513,9 @@ tmp<volScalarField> kineticFluidModel::J4() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                aMax
+                aMax_
             );
-        a = max(a, aMin);
+        a = max(a, aMin_);
 
         volScalarField j4 = 
 		(
@@ -560,9 +541,7 @@ tmp<volVectorField> kineticFluidModel::deltaG()
 	dimensionedScalar epsSmall("epsSmall", epsilon_.dimensions(), 1e-08);
 	dimensionedScalar TSmall("TSmall", T_.dimensions(), 1e-08);
 	dimensionedScalar cdSmall("cdSmall", cd.dimensions(), 1e-08);
-	//dimensionedScalar tauSmall("tauSmall", tau.dimensions(), 1e-03);
 	cd = cd + cdSmall;
-	//tau = tau + tauSmall;
 	
 
 	volScalarField eta1 = 1.0 - 4.0 * tau * cd 
@@ -577,48 +556,56 @@ tmp<volVectorField> kineticFluidModel::deltaG()
 		( 
 			1.0 / cd + 4.0 * tau / (1.0 - 4 * tau * cd) 
 		);
-	Info << "g_cd coefficient: " 
-		<< g_cd.weightedAverage(g_cd.mesh().V()).value()
-		<<" min: " << min(g_cd).value()
-		<<" max: " << max(g_cd).value() << endl;
+        // if switch is off set this coefficient to zero
+        if(!cdTauForces_)
+        {
+            g_cd = 0.0f;
+        }
 
-	volScalarField g_tau = eta1 * 2.0 * cd / (1.0 - 2 * tau * cd) * (1.0 - R * E1_ * eta1)
+	volScalarField g_tau = eta1 * 2.0 * cd / (1.0 - 2 * tau * cd) 
+                * (1.0 - R * E1_ * eta1)
 		+ eta2 / tau / (1.0 - 4 * tau * cd) * (1.0 - R * E1_ * eta2)
 		+ E2_ * (2.0 - 3.0 / 2.0 * R) *
 		( 
 			1.0 / tau + 4.0 * cd / (1.0 - 4 * tau * cd) 
 		);
-	Info << "g_tau coefficient: " 
-		<< g_tau.weightedAverage(g_tau.mesh().V()).value()
-		<<" min: " << min(g_tau).value()
-		<<" max: " << max(g_tau).value() << endl;
+        // if switch is off set this coefficient to zero
+        if(!cdTauForces_)
+        {
+            g_tau = 0.0f;
+        }
 
 	volScalarField g_epsilon = eta1 * (1.0 + E1_) / (epsilon_ + epsSmall);
-	Info << "g_epsilon coefficient: " 
-		<< g_epsilon.weightedAverage(g_epsilon.mesh().V()).value()
-		<<" min: " << min(g_epsilon).value()
-		<<" max: " << max(g_epsilon).value() << endl;
 
 	volScalarField g_T = - 1.0 / T_ *
 		(
 			1.0 - E1_ * R - 1.5 * E1_
 		)
 		+ 3.0 * E2_ / T_;
+
+	volScalarField g_alpha = (E1_ + 2.0 * E2_) / (alpha + SMALL);
+        //----------------------------------------------------------------------
+	Info << "g_cd coefficient: " 
+		<< g_cd.weightedAverage(g_cd.mesh().V()).value()
+		<<" min: " << min(g_cd).value()
+		<<" max: " << max(g_cd).value() << endl;
+	Info << "g_tau coefficient: " 
+		<< g_tau.weightedAverage(g_tau.mesh().V()).value()
+		<<" min: " << min(g_tau).value()
+		<<" max: " << max(g_tau).value() << endl;
+	Info << "g_epsilon coefficient: " 
+		<< g_epsilon.weightedAverage(g_epsilon.mesh().V()).value()
+		<<" min: " << min(g_epsilon).value()
+		<<" max: " << max(g_epsilon).value() << endl;
 	Info << "g_T coefficient: " 
 		<< g_T.weightedAverage(g_T.mesh().V()).value()
 		<<" min: " << min(g_T).value()
 		<<" max: " << max(g_T).value() << endl;
-
-	volScalarField g_alpha = (E1_ + 2.0 * E2_) / (alpha + SMALL);
 	Info << "g_alpha coefficient: " 
 		<< g_alpha.weightedAverage(g_alpha.mesh().V()).value()
 		<<" min: " << min(g_alpha).value()
 		<<" max: " << max(g_alpha).value() << endl;
-
-        // deleta force next to wall
-        const fvPatchList& patches = E2_.mesh().boundary();
-
-
+        //----------------------------------------------------------------------
         volVectorField g1("g_eps", g_epsilon * fvc::grad(epsilon_));
         volVectorField g2("g_alpha", g_alpha * fvc::grad(alpha));
         volVectorField g3("g_T", g_T * fvc::grad(T_));
@@ -645,36 +632,8 @@ tmp<volVectorField> kineticFluidModel::deltaG()
 		<< g5.weightedAverage(g_alpha.mesh().V()).value()
 		<<" min: " << min(g5).value()
 		<<" max: " << max(g5).value() << endl;
-        //g1.write();
-        //g2.write();
-        //g3.write();
-        //g4.write();
-        //g5.write();
-
-        //g1.boundaryField() = vector(0,0,0);
-        //g2.boundaryField() = vector(0,0,0);
-        //g3.boundaryField() = vector(0,0,0);
-        //g4.boundaryField() = vector(0,0,0);
-        //g5.boundaryField() = vector(0,0,0);
-        //forAll(patches, patchi)
-        //{
-                //const fvPatch& curPatch = patches[patchi];
-                //if (isType<wallFvPatch>(curPatch))
-                //{
-                        //forAll(curPatch, facei)
-                        //{
-                                //label faceCelli = curPatch.faceCells()[facei];
-                                //x[faceCelli] = vector(0, 0, 0);
-                        //}
-                //}
-        //}
 
 	return  (g1 + g2 + g3 + g4 + g5);
-            //g_alpha * fvc::grad(alpha)
-                //+ g_epsilon * fvc::grad(epsilon_)
-		//+ g_T * fvc::grad(T_);
-                //+ g_tau * fvc::grad(tau);
-                //+ g_cd * fvc::grad(cd); 
 }
 
 
@@ -682,10 +641,14 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
 	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+
 	const volScalarField rad = g0();
+
 	volScalarField j3 = J3();
 	volScalarField j1 = J1();
+
 	volScalarField R = 1.0 / (1.0 + E1_ + 2 * E2_);
+
 	Info << "R: " 
 		<< R.weightedAverage(R.mesh().V()).value()
 		<<" min: " << min(R).value()
@@ -709,7 +672,8 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 			dispersedPhase().d() * j3 / R / (mag(U) + smallU)
 		) + j1;
 
-	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) * g0() * fvc::grad(x);
+	return 6.0 * (1.0 + e_) * pow(R, 2) * pow(dispersedPhase(), 2) 
+            * g0() * fvc::grad(x);
 }
 
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const

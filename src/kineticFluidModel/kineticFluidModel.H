@@ -82,6 +82,7 @@ namespace Foam
 
     volScalarField E1_;
     volScalarField E2_;
+    volScalarField R_;
     volScalarField a_;
     volScalarField T_;
     volScalarField epsilon_;
@@ -93,6 +94,15 @@ namespace Foam
     // 'inverse of turbulence intensity' function bounds:
     scalar aMin_;
     scalar aMax_;
+
+    //in deltaG should cd and tau dependent forces be included?
+    Switch cdTauForces_;
+
+    // should stokes drag be used instead of drag coefficient from drag model?
+    Switch useStokesDrag_;
+
+    // use corrected viscosity? If not turbulent viscosity is used
+    Switch useViscosityCorrection_;
 
   public:
 
