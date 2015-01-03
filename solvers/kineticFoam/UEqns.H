@@ -94,165 +94,10 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volScalarField X2 = KM.pressureCorrection();
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
 	
-        Info << "Calculating F1" << endl;
-	volVectorField F1 ("F1", KM.F1(alphaPhi2));
-        Info << "Calculating F2" << endl;
-	volVectorField F2 ("F2", KM.F2(alphaPhi2));
-        Info << "Calculating F3" << endl;
-	volVectorField F3 ("F3", KM.F3(alphaPhi2));
+	volVectorField& F(KM.collisionalF(alphaPhi2));
+        KM.print();
 
-
-	F = F1 + F2 + F3;
-
-
-        dimensionedScalar F_tres ("Ftres", dimLength / pow(dimTime, 2), 1000.0);
-        //F.boundaryField() = vector(0, 0, 0);
-        //F0.boundaryField() = vector(0, 0, 0);
-        //F1.boundaryField() = vector(0, 0, 0);
-        //F3.boundaryField() = vector(0, 0, 0);
-        //F2.boundaryField() = vector(0, 0, 0);
-        /*F.component(0) = min(F.component(0), F_tres);;*/
-        //F.component(0) = max(F.component(0), -F_tres);;
-        //F.component(1) = min(F.component(1), F_tres);;
-        //F.component(1) = min(F.component(1), F_tres);;
-        //F.component(2) = max(F.component(2), -F_tres);;
-        //F.component(2) = max(F.component(2), -F_tres);;
-        
-        const fvPatchList& patches = mesh.boundary();
-
-        forAll(patches, patchi)
-        {
-                const fvPatch& curPatch = patches[patchi];
-                if (isType<wallFvPatch>(curPatch))
-                {
-                        forAll(curPatch, facei)
-                        {
-                                label faceCelli = curPatch.faceCells()[facei];
-                                //F0[faceCelli] = vector(0, 0, 0);
-                                F[faceCelli] = vector(0, 0, 0);
-                        }
-                }
-        }
-
-        scalar maxF = KM.maxF();
-        forAll(mesh.C(), celli)
-        {
-                //F0[celli].x() = min(F0[celli].x(), 100.0);
-                //F0[celli].y() = min(F0[celli].y(), 100.0);
-                //F0[celli].z() = min(F0[celli].z(), 100.0);
-
-                //F0[celli].x() = max(F0[celli].x(), -100.0);
-                //F0[celli].y() = max(F0[celli].y(), -100.0);
-                //F0[celli].z() = max(F0[celli].z(), -100.0);
-
-                F[celli].x() = min(F[celli].x(), maxF);
-                F[celli].y() = min(F[celli].y(), maxF);
-                F[celli].z() = min(F[celli].z(), maxF);
-
-                F[celli].x() = max(F[celli].x(), -maxF);
-                F[celli].y() = max(F[celli].y(), -maxF);
-                F[celli].z() = max(F[celli].z(), -maxF);
-        }
-
-        F.correctBoundaryConditions();
-	volVectorField F0 ("F0", F);
-
-        forAll(mesh.C(), celli)
-        {
-                scalar count = 1.0;
-                forAll(mesh.cellCells()[celli], cellj)
-                {
-                    label n_id = mesh.cellCells()[celli][cellj];
-                    count += 1.0;
-                    F[celli] += F0[n_id];
-                }
-                F[celli] /= count;
-
-                //if(mesh.C()[celli].z() < 0.2 || mesh.C()[celli].z() > 3.0)
-                //{
-                    //F[celli] = vector(0, 0, 0);
-                //}
-                //F[celli].z() = 0.0f;
-                //F[celli].x() = min(F[celli].x(), 1000.0);
-                //F[celli].y() = min(F[celli].y(), 1000.0);
-                //F[celli].z() = min(F[celli].z(), 1000.0);
-
-                //F[celli].x() = max(F[celli].x(), -1000.0);
-                //F[celli].y() = max(F[celli].y(), -1000.0);
-                //F[celli].z() = max(F[celli].z(), -1000.0);
-        }
-        //F = 0.5 * (F + F_old);
-
-
-
-	
-	// deleta force next to wall
-        //const fvPatchList& patches = mesh.boundary();
-
-        //forAll(patches, patchi)
-        //{
-                //const fvPatch& curPatch = patches[patchi];
-                //if (isType<wallFvPatch>(curPatch))
-                //{
-                        //forAll(curPatch, facei)
-                        //{
-                                //label faceCelli = curPatch.faceCells()[facei];
-                                //F[faceCelli] = vector(0, 0, 0);
-                        //}
-                //}
-        //}
-	//-------------------------
-
-        F.correctBoundaryConditions();
-	volScalarField Fmag = mag(F);
-        if(mesh.time().outputTime())
-        {
-            F1.write();
-            F2.write();
-            F3.write();
-            F0.write();
-            //F.write();
-        }
         F_old = F;
-
-	Info << "------------------------------------" << endl;
-	Info << "correction factor: " << X2.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(X2).value()
-	  <<" max: " << max(X2).value() << endl;
-	Info << "force: " << dp.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(dp).value()
-	  <<" max: " << max(dp).value() << endl;
-	Info << "F1: " << F1.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(F1).value()
-	  <<" max: " << max(F1).value() 
-	  <<" dims: " << F1.dimensions()
-	  << endl;
-	Info << "F2: " << F2.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(F2).value()
-	  <<" max: " << max(F2).value()
-	  <<" dims: " << F2.dimensions()
-	  << endl;
-	Info << "F3: " << F3.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(F3).value()
-	  <<" max: " << max(F3).value()
-	  <<" dims: " << F3.dimensions()
-	  << endl;
-	Info << "F: " << F.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(F).value()
-	  <<" max: " << max(F).value()
-	  <<" dims: " << F.dimensions()
-	  << endl;
-	Info << "Fmag: " << Fmag.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(Fmag).value()
-	  <<" max: " << max(Fmag).value()
-	  <<" dims: " << Fmag.dimensions()
-	  << endl;
-	Info << "F0: " << F0.weightedAverage(mesh.V()).value()
-	  <<" min: " << min(F0).value()
-	  <<" max: " << max(F0).value()
-	  <<" dims: " << F0.dimensions()
-	  << endl;
-	Info << "------------------------------------" << endl;
 
         U2Eqn =
         (
@@ -283,3 +128,6 @@ volScalarField dragCoeff(fluid.dragCoeff());
         U2Eqn.relax();
     }
 }
+
+
+

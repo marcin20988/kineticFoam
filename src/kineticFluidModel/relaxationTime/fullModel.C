@@ -119,7 +119,7 @@ tmp<volScalarField> fullModel::laminar()
 
 tmp<volScalarField> fullModel::total()
 {
-  Info << "Using effective viscosity to calculate relaxation time" << endl;
+  //Info << "Using effective viscosity to calculate relaxation time" << endl;
   volScalarField nu = dispersedPhase_.turbulence().nuEff();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
   //volScalarField cd = - fluid_.dragCoeff() 

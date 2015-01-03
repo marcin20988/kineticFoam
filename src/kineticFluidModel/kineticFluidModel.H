@@ -87,6 +87,7 @@ namespace Foam
     volScalarField T_;
     volScalarField epsilon_;
     volVectorField deltaG_;
+    volVectorField F_total_;
     // coefficient of restitution
     scalar e_;
     // maximum value of total collisional force component
@@ -103,6 +104,13 @@ namespace Foam
 
     // use corrected viscosity? If not turbulent viscosity is used
     Switch useViscosityCorrection_;
+
+    // smooth out collisional force
+    Switch forceSmoothing_;
+
+    // delete collisional force on the wall
+    Switch wallTreatment_;
+
 
   public:
 
@@ -214,6 +222,10 @@ namespace Foam
     tmp<volVectorField> F1(surfaceScalarField& phi) const;
     tmp<volVectorField> F2(surfaceScalarField& phi) const;
     tmp<volVectorField> F3(surfaceScalarField& phi) const;
+    tmp<volVectorField> F4(surfaceScalarField& phi) const;
+    tmp<volVectorField> F5(surfaceScalarField& phi) const;
+    tmp<volVectorField> F6(surfaceScalarField& phi) const;
+    volVectorField& collisionalF(surfaceScalarField& phi);
 
     // Access
 
@@ -222,6 +234,7 @@ namespace Foam
     // Edit
 
     // Write
+    void print();
 
 
     // Member Operators
