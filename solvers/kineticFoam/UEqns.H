@@ -104,7 +104,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
             fvm::ddt(alpha2, U2)
           + fvm::div(alphaPhi2, U2)
           - fvm::Sp(fvc::ddt(alpha2) + fvc::div(alphaPhi2), U2)
-          + phase2.turbulence().divDevReff(U2)
+          //+ phase2.turbulence().divDevReff(U2)
           + KM.divDevReff(U2)
          ==
           F 
