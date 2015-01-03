@@ -151,7 +151,9 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
    dimensionedVector("deltaG", dimless / dimLength, vector(0.0, 0.0, 0.0))
   ),
   e_(readScalar(kineticFluidModelDict_.lookup("e"))),
-  maxF_(readScalar(kineticFluidModelDict_.lookup("maxF")))
+  maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
+  aMin_(kineticFluidModelDict_.lookupOrDefault("aMin", 0.1)),
+  aMax_(kineticFluidModelDict_.lookupOrDefault("aMax", 20))
 {}
 
 
@@ -472,84 +474,44 @@ tmp<volScalarField> kineticFluidModel::J1() const
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                20.0
+                aMax
             );
-        a = max(a, 0.1);
+        a = max(a, aMin);
 
 	Info << "a-function coefficient: " 
 		<< a.weightedAverage(a.mesh().V()).value()
 		<<" min: " << min(a).value()
 		<<" max: " << max(a).value() << endl;
         volScalarField j1 = beta1() + pow(a, 2) * beta2();
-        //j1.boundaryField() = 0;
-        // deleta force next to wall
-        //const fvPatchList& patches = j1.mesh().boundary();
-
-        //forAll(patches, patchi)
-        //{
-            //const fvPatch& curPatch = patches[patchi];
-            //if (isType<wallFvPatch>(curPatch))
-            //{
-                //forAll(curPatch, facei)
-                //{
-                    //label faceCelli = curPatch.faceCells()[facei];
-                    //j1[faceCelli] = 0;
-                //}
-            //}
-        //}
-	//-------------------------
+        
 	return - T_ * j1;
 }
 
 tmp<volScalarField> kineticFluidModel::J2() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
-	//volScalarField a = mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_));
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                20.0
+                aMax
             );
-        a = max(a, 0.1);
+        a = max(a, aMin);
 
         volScalarField j2 = beta3() + pow(a, 2) * beta4();
-        //j2.boundaryField() = 0;
-        // deleta force next to wall
-        const fvPatchList& patches = j2.mesh().boundary();
 
-        //forAll(patches, patchi)
-        //{
-            //const fvPatch& curPatch = patches[patchi];
-            //if (isType<wallFvPatch>(curPatch))
-            //{
-                //forAll(curPatch, facei)
-                //{
-                    //label faceCelli = curPatch.faceCells()[facei];
-                    //j2[faceCelli] = 0;
-                //}
-            //}
-        //}
-	//-------------------------
 	return - T_ * j2;
 }
 
 tmp<volScalarField> kineticFluidModel::J3() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
-	//volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                20.0
+                aMax
             );
-        a = max(a, 0.1);
+        a = max(a, aMin);
     
-
-	Info << "a-function coefficient: " 
-		<< a.weightedAverage(a.mesh().V()).value()
-		<<" min: " << min(a).value()
-		<<" max: " << max(a).value() << endl;
-
         volScalarField j3 = 
 		(
 			beta5() * pow(a, -3) 
@@ -560,36 +522,19 @@ tmp<volScalarField> kineticFluidModel::J3() const
 		+ beta9() * pow(a, -2)
 		+ beta10()
 		+ beta11() * pow(a, 2);
-        //j3.boundaryField() = 0;
-        // deleta force next to wall
-        const fvPatchList& patches = j3.mesh().boundary();
 
-        //forAll(patches, patchi)
-        //{
-            //const fvPatch& curPatch = patches[patchi];
-            //if (isType<wallFvPatch>(curPatch))
-            //{
-                //forAll(curPatch, facei)
-                //{
-                    //label faceCelli = curPatch.faceCells()[facei];
-                    //j3[faceCelli] = 0;
-                //}
-            //}
-        //}
-	//-------------------------
 	return T_ * j3;
 }
 
 tmp<volScalarField> kineticFluidModel::J4() const
 {
 	dimensionedScalar smallT("smallT", T_.dimensions(), 1e-08);
-	//volScalarField a = max( mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)), 0.5);
 	volScalarField a = min
             ( 
                 mag(dispersedPhase().U()) * sqrt(3.0 / (8.0 * T_ + smallT)),
-                20.0
+                aMax
             );
-        a = max(a, 0.1);
+        a = max(a, aMin);
 
         volScalarField j4 = 
 		(
@@ -600,23 +545,6 @@ tmp<volScalarField> kineticFluidModel::J4() const
 		+ beta15() * pow(a, -2)
 		+ beta16()
 		+ beta17() * pow(a, 2);
-        //j4.boundaryField() = 0;
-        // deleta force next to wall
-        const fvPatchList& patches = j4.mesh().boundary();
-
-        //forAll(patches, patchi)
-        //{
-            //const fvPatch& curPatch = patches[patchi];
-            //if (isType<wallFvPatch>(curPatch))
-            //{
-                //forAll(curPatch, facei)
-                //{
-                    //label faceCelli = curPatch.faceCells()[facei];
-                    //j4[faceCelli] = 0;
-                //}
-            //}
-        //}
-	//-------------------------
 
 	return T_ * j4;
 }

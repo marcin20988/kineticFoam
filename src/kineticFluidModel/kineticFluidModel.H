@@ -90,6 +90,9 @@ namespace Foam
     scalar e_;
     // maximum value of total collisional force component
     scalar maxF_;
+    // 'inverse of turbulence intensity' function bounds:
+    scalar aMin_;
+    scalar aMax_;
 
   public:
 
