@@ -160,6 +160,7 @@ namespace Foam
     tmp<fvVectorMatrix> divDevReff(const volVectorField& U);
 
     //list of beta functions for J integrals
+    tmp<volScalarField> beta(scalar c1, scalar c2, scalar c3) const;
     tmp<volScalarField> beta1() const;
     tmp<volScalarField> beta2() const;
     tmp<volScalarField> beta3() const;

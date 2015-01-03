@@ -340,14 +340,11 @@ tmp<volScalarField> kineticFluidModel::pressureCorrection() const
 
 tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 {
-    volScalarField k =  temp();//dispersedPhase().turbulence().k();
+    volScalarField k =  temp();
 
     volScalarField correctedViscosity = 0.5 * 8.0 / 9.0 
         * a_ * (1.0 / (1.0 + E1_ + 2.0 * E2_)) * pow(k, 2);
     
-
-    //correctedViscosity -= 2 * dispersedPhase().turbulence().nuEff();
-    //correctedViscosity *= dispersedPhase().rho();
     correctedViscosity += dispersedPhase().nu();
 
     volScalarField ratio = correctedViscosity 
@@ -355,9 +352,6 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
     Info << "Ratio of viscosity correction: " << ratio.weightedAverage(k.mesh().V()).value()
         <<" min: " << min(ratio).value()
         <<" max: " << max(ratio).value() << endl;
-    //Info << "Corrected viscosity: " << correctedViscosity.weightedAverage(k.mesh().V()).value()
-        //<<" min: " << min(correctedViscosity).value()
-        //<<" max: " << max(correctedViscosity).value() << endl;
 
     return
         (
@@ -382,122 +376,94 @@ tmp<volScalarField> kineticFluidModel::tauTotal()
     return tau_ -> total();
 }
 
-tmp<volScalarField> kineticFluidModel::beta1() const
+tmp<volScalarField> kineticFluidModel::beta(scalar c1, scalar c2, scalar c3) const
 {
 	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.14 * pow(F1, 2) + 1.51 * F1 * E2_ + 2.15 * pow(E2_,2);
+	return c1 * pow(F1, 2) + c2 * F1 * E2_ + c3 * pow(E2_,2);
+}
+tmp<volScalarField> kineticFluidModel::beta1() const
+{
+        return beta(0.14, 1.51, 2.15);
 }
 
 tmp<volScalarField> kineticFluidModel::beta2() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.23 * pow(F1, 2) + 1.81 * F1 * E2_ + 2.63 * pow(E2_,2);
+        return beta(0.23, 1.81, 2.63);
 }
 
 tmp<volScalarField> kineticFluidModel::beta3() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.21 * pow(F1, 2) + 2.26 * F1 * E2_ + 3.22 * pow(E2_,2);
+        return beta(0.21, 2.26, 3.22);
 }
 
 tmp<volScalarField> kineticFluidModel::beta4() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.57 * pow(F1, 2) + 4.53 * F1 * E2_ + 6.57 * pow(E2_,2);
+        return beta(0.57, 4.53, 6.57);
 }
 
 tmp<volScalarField> kineticFluidModel::beta5() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return -0.10 * pow(F1, 2) - 1.68 * F1 * E2_ - 2.61 * pow(E2_,2);
+        return beta(-0.10, -1.68, -2.61);
 }
 
 tmp<volScalarField> kineticFluidModel::beta6() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return -0.01 * pow(F1, 2) - 0.32 * F1 * E2_ - 0.57 * pow(E2_,2);
+        return beta(-0.01, -0.32, -0.57);
 }
 
 tmp<volScalarField> kineticFluidModel::beta7() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.08 * pow(F1, 2) + 0.64 * F1 * E2_ + 0.87 * pow(E2_,2);
+        return beta(0.08, 0.64, 0.87);
 }
 
 tmp<volScalarField> kineticFluidModel::beta8() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.09 * pow(F1, 2) + 1.49 * F1 * E2_ + 2.32 * pow(E2_,2);
+        return beta(0.09, 1.49, 2.32);
 }
 
 tmp<volScalarField> kineticFluidModel::beta9() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return -0.05 * pow(F1, 2) - 0.71 * F1 * E2_ - 1.04 * pow(E2_,2);
+        return beta(-0.05, -0.71, -1.04);
 }
 
 tmp<volScalarField> kineticFluidModel::beta10() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.05 * pow(F1, 2) + 0.57 * F1 * E2_ + 0.80 * pow(E2_,2);
+        return beta(0.05, 0.57, 0.80);
 }
 
 tmp<volScalarField> kineticFluidModel::beta11() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.14 * pow(F1, 2) + 1.13 * F1 * E2_ + 1.64 * pow(E2_,2);
+        return beta(0.14, 1.13, 1.64);
 }
 
 tmp<volScalarField> kineticFluidModel::beta12() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.06 * pow(F1, 2) + 0.80 * F1 * E2_ + 1.17 * pow(E2_,2);
+        return beta(0.06, 0.80, 1.17);
 }
 
 tmp<volScalarField> kineticFluidModel::beta13() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.24 * pow(F1, 2) + 2.23 * F1 * E2_ + 3.21 * pow(E2_,2);
+        return beta(0.24, 2.23, 3.21);
 }
 
 tmp<volScalarField> kineticFluidModel::beta14() const
 {
-	//volScalarField E2 = T_ * E2_;
-	return 0.53 * pow(E2_,2);
+        return beta(0.0, 0.0, 0.53);
 }
 
 tmp<volScalarField> kineticFluidModel::beta15() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return -0.05 * pow(F1, 2) - 0.71 * F1 * E2_ - 1.04 * pow(E2_,2);
+        return beta(-0.05, -0.71, -1.04);
 }
 
 tmp<volScalarField> kineticFluidModel::beta16() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.11 * pow(F1, 2) + 1.13 * F1 * E2_ + 1.61 * pow(E2_,2);
+        return beta(0.11, 1.13, 1.61);
 }
 
 tmp<volScalarField> kineticFluidModel::beta17() const
 {
-	volScalarField F1 = 1 + E1_;
-	//volScalarField E2 = T_ * E2_;
-	return 0.42 * pow(F1, 2) + 3.40 * F1 * E2_ + 4.93 * pow(E2_,2);
+        return beta(0.42, 3.40, 4.93);
 }
 
 tmp<volScalarField> kineticFluidModel::J1() const
