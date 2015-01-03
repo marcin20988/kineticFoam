@@ -122,8 +122,8 @@ tmp<volScalarField> fullModel::total()
   Info << "Using effective viscosity to calculate relaxation time" << endl;
   volScalarField nu = dispersedPhase_.turbulence().nuEff();
   volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
-  volScalarField cd = - fluid_.dragCoeff() 
-      / KM_.dispersedPhase().rho() * KM_.dispersedPhase();
+  //volScalarField cd = - fluid_.dragCoeff() 
+      /// KM_.dispersedPhase().rho() * KM_.dispersedPhase();
 
   volScalarField A = 
       min
@@ -133,7 +133,8 @@ tmp<volScalarField> fullModel::total()
 	      maxTau_
       );
 
-  tau_ = max(A / (1 + A * cd), minTau_);
+  //tau_ = max(A / (1 + A * cd), minTau_);
+  tau_ = max(A, minTau_);
   tau_.correctBoundaryConditions();
 
   return tau_;

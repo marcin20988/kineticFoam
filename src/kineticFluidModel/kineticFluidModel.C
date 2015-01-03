@@ -577,15 +577,26 @@ tmp<volVectorField> kineticFluidModel::deltaG()
             g_tau = 0.0f;
         }
 
-	volScalarField g_epsilon = eta1 * (1.0 + E1_) / (epsilon_ + epsSmall);
+	volScalarField g_epsilon = eta1 * (1.0 + E1_);
+        volScalarField logEps = 
+            log(
+                epsilon_ 
+                / dimensionedScalar("eps", epsilon_.dimensions(), 1.0)
+            );
 
-	volScalarField g_T = - 1.0 / T_ *
+	volScalarField g_T = - 
 		(
-			1.0 - E1_ * R - 1.5 * E1_
-		)
-		+ 3.0 * E2_ / T_;
+			1.0 - E1_ * R - 1.5 * E1_- 3.0 * E2_
+		);
+        volScalarField logT = 
+            log
+            (
+                T_
+                / dimensionedScalar("T", T_.dimensions(), 1.0)
+            );
 
-	volScalarField g_alpha = (E1_ + 2.0 * E2_) / (alpha + SMALL);
+	volScalarField g_alpha = (E1_ + 2.0 * E2_);
+        volScalarField logAlpha = log(alpha);
         //----------------------------------------------------------------------
 	Info << "g_cd coefficient: " 
 		<< g_cd.weightedAverage(g_cd.mesh().V()).value()
@@ -608,9 +619,9 @@ tmp<volVectorField> kineticFluidModel::deltaG()
 		<<" min: " << min(g_alpha).value()
 		<<" max: " << max(g_alpha).value() << endl;
         //----------------------------------------------------------------------
-        volVectorField g1("g_eps", g_epsilon * fvc::grad(epsilon_));
-        volVectorField g2("g_alpha", g_alpha * fvc::grad(alpha));
-        volVectorField g3("g_T", g_T * fvc::grad(T_));
+        volVectorField g1("g_eps", g_epsilon * fvc::grad(logEps));
+        volVectorField g2("g_alpha", g_alpha * fvc::grad(logAlpha));
+        volVectorField g3("g_T", g_T * fvc::grad(logT));
         volVectorField g4("g_tau", g_tau * fvc::grad(tau));
         volVectorField g5("g_cd", g_cd * fvc::grad(cd));
 
