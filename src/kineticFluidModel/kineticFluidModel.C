@@ -576,9 +576,10 @@ tmp<volVectorField> kineticFluidModel::deltaG()
         }
 
 	volScalarField g_epsilon = eta1 * (1.0 + E1_);
+
         volScalarField logEps = 
             log(
-                epsilon_ 
+                max(epsilon_, epsSmall)
                 / dimensionedScalar("eps", epsilon_.dimensions(), 1.0)
             );
 
@@ -589,12 +590,12 @@ tmp<volVectorField> kineticFluidModel::deltaG()
         volScalarField logT = 
             log
             (
-                T_
+                max(T_, TSmall)
                 / dimensionedScalar("T", T_.dimensions(), 1.0)
             );
 
 	volScalarField g_alpha = (E1_ + 2.0 * E2_);
-        volScalarField logAlpha = log(alpha);
+        volScalarField logAlpha = log(max(alpha, 1e-08));
         //----------------------------------------------------------------------
 	//Info << "g_cd coefficient: " 
 		//<< g_cd.weightedAverage(g_cd.mesh().V()).value()
