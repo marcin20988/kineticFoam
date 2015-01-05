@@ -183,7 +183,11 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   useViscosityCorrection_(kineticFluidModelDict_.lookup("useViscosityCorrection")),
   forceSmoothing_(kineticFluidModelDict_.lookup("forceSmoothing")),
   wallTreatment_(kineticFluidModelDict_.lookup("wallTreatment")),
-  useG_(kineticFluidModelDict_.lookup("useG"))
+  useG_(kineticFluidModelDict_.lookup("useG")),
+  developmentLength_(kineticFluidModelDict_.lookup("developmentLength")),
+  developmentL1_(readScalar(kineticFluidModelDict_.lookup("developmentLstart"))),
+  developmentL2_(readScalar(kineticFluidModelDict_.lookup("developmentLend"))),
+  developmentScale_(readScalar(kineticFluidModelDict_.lookup("developmentScale")))
 {}
 
 
@@ -774,6 +778,32 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     }
 
     volVectorField F0("F0", F_total_);
+
+    if(developmentLength_)
+    {
+        forAll(mesh_.C(), celli)
+        {
+            scalar coord = mesh_.C()[celli].z();
+
+            if(coord < developmentL2_ && coord > developmentL1_)
+            {
+                F0[celli] *= 
+                    (
+                        developmentScale_ 
+                        + (1.0 - developmentScale_ )
+                        * (coord - developmentL1_)
+                        / (developmentL2_ - developmentL1_)
+                    );
+                F_total_[celli] *= 
+                    (
+                        developmentScale_ 
+                        + (1.0 - developmentScale_ )
+                        * (coord - developmentL1_)
+                        / (developmentL2_ - developmentL1_)
+                    );
+            }
+        }
+    }
     
     if(wallTreatment_)
     {

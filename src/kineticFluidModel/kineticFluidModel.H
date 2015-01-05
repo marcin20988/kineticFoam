@@ -117,6 +117,17 @@ namespace Foam
     // use deltaG_ forces?
     Switch useG_;
 
+    // development length is a length from inlet over which forces are scaled
+    // down to prevent nasty near-inlet effect
+    Switch developmentLength_;
+
+    // z-coordinate of begining of the development length
+    scalar developmentL1_;
+    // z-coordinate of end of the development length
+    scalar developmentL2_;
+    // initial scaling factor on the development length
+    scalar developmentScale_;
+
 
   public:
 
