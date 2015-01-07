@@ -663,7 +663,7 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 
 	const volScalarField rad = g0();
 
-	volScalarField j1 = J1();
+	volScalarField j1("J1", J1());
 
 	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
             * g0() * fvc::grad(j1);
@@ -678,10 +678,14 @@ tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
 
 	volScalarField j3 = J3();
 
-	volScalarField x = (deltaG_ & U) *
-		(
-			dispersedPhase().d() * j3 / R_ / (mag(U) + smallU)
-		);
+	volScalarField x
+            (
+                "x",
+                (deltaG_ & U) *
+                (
+                    dispersedPhase().d() * j3 / R_ / (mag(U) + smallU)
+                )
+            );
 
 	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
             * g0() * fvc::grad(x);
@@ -691,9 +695,9 @@ tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
 	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
-	volScalarField j3 = J3();
+	volScalarField j3("J3", J3());
 
-	volVectorField x = fvc::div(phi, deltaG_ * j3) / (mag(U) + smallU);
+	volVectorField x("x", fvc::div(phi, deltaG_ * j3) / (mag(U) + smallU));
 	return 6.0 * (1.0 + e_) * pow(R_, 3) * dispersedPhase().d() 
             * pow(dispersedPhase(), 2) * g0() * x;
 }
@@ -702,7 +706,7 @@ tmp<volVectorField> kineticFluidModel::F4(surfaceScalarField& phi) const
 {
 	const volVectorField& U = dispersedPhase().U();
 	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
-	volScalarField j3 = J3();
+	volScalarField j3("J3", J3());
 
 	volVectorField x = fvc::div(deltaG_ * j3) * U / (mag(U) + smallU);
 	return 6.0 * (1.0 + e_) * pow(R_, 3) * dispersedPhase().d() 
@@ -717,8 +721,12 @@ tmp<volVectorField> kineticFluidModel::F5(surfaceScalarField& phi) const
 	volScalarField j3 = J3();
 	volScalarField j4 = J4();
 
-	volScalarField x = (U & deltaG_) * (2.0 * j4 - 5.0 * j3) 
-            / (mag(U) + smallU) * R_ * dispersedPhase().d();
+	volScalarField x
+            (
+                "x",
+                (U & deltaG_) * (2.0 * j4 - 5.0 * j3) 
+                / (mag(U) + smallU) * R_ * dispersedPhase().d()
+            );
 	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) * g0() 
 		* fvc::div(phi, x) * U / pow(mag(U) + smallU, 2);
 }
@@ -730,7 +738,7 @@ tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
 	volScalarField j1 = J1();
 	volScalarField j2 = J2();
 
-	volScalarField x = 2.0 * j2 - 3.0 * j1;
+	volScalarField x("x", 2.0 * j2 - 3.0 * j1);
 	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) * g0() 
 		* fvc::div(phi, x) * U / pow(mag(U) + smallU, 2);
 }
