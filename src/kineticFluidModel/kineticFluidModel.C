@@ -471,8 +471,17 @@ tmp<volScalarField> kineticFluidModel::J1() const
 		<<" min: " << min(a).value()
 		<<" max: " << max(a).value() << endl;
         volScalarField j1 = beta1() + pow(a, 2) * beta2();
-        
-	return - T_ * j1;
+        return min
+            (
+                // this is an analytical J1
+                -T_ * j1,
+                // and this is limit og J1 as k -> 0
+                beta(-0.08, -0.68, -0.96) * pow
+                (
+                    mag(dispersedPhase().U()), 
+                    2
+                )
+            );
 }
 
 tmp<volScalarField> kineticFluidModel::J2() const
@@ -665,8 +674,11 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 
 	volScalarField j1("J1", J1());
 
-	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
-            * g0() * fvc::grad(j1);
+	return fvc::grad
+            ( 
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() * j1
+            );
 }
 
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
@@ -739,8 +751,12 @@ tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
 	volScalarField j2 = J2();
 
 	volScalarField x("x", 2.0 * j2 - 3.0 * j1);
-	return 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) * g0() 
-		* fvc::div(phi, x) * U / pow(mag(U) + smallU, 2);
+	return fvc::grad
+            (
+                //phi,
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() *  x
+            ) & U * U / pow(mag(U) + smallU, 2);
 }
 
 tmp<volScalarField> kineticFluidModel::g0() const
