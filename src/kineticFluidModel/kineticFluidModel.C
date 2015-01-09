@@ -942,7 +942,7 @@ tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
     //}
     sp_total_ *= scaleF_;
 
-    sp_total_.boundaryField() = 0;
+    sp_total_.boundaryField() = 1e-06;
 
     forAll(mesh_.C(), celli)
     {
@@ -990,8 +990,8 @@ tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
                         forAll(curPatch, facei)
                         {
                                 label faceCelli = curPatch.faceCells()[facei];
-                                F0[faceCelli] = 0;
-                                sp_total_[faceCelli] = 0;
+                                F0[faceCelli] = 1e-06;
+                                sp_total_[faceCelli] = 1e-06;
                         }
                 }
         }
@@ -1017,8 +1017,8 @@ tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
         f6.write();
     }
 
-    sp_total_.boundaryField() = 0;
-    return tmp<volScalarField> (sp_total_) ;
+    sp_total_.boundaryField() = 1e-06;
+    return sp_total_ * 1.0;
 }
 
 
