@@ -242,6 +242,8 @@ namespace Foam
     tmp<volVectorField> F4(surfaceScalarField& phi) const;
     tmp<volVectorField> F5(surfaceScalarField& phi) const;
     tmp<volVectorField> F6(surfaceScalarField& phi) const;
+    tmp<volScalarField> F4Sp(surfaceScalarField& phi) const;
+    tmp<volScalarField> F5Sp(surfaceScalarField& phi) const;
     tmp<volScalarField> F6Sp(surfaceScalarField& phi) const;
     volVectorField& collisionalF(surfaceScalarField& phi);
     tmp<volScalarField> collisionalSp(surfaceScalarField& phi);
