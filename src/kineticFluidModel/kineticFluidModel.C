@@ -805,6 +805,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
 
     if(developmentLength_)
     {
+
         forAll(mesh_.C(), celli)
         {
             scalar coord = mesh_.C()[celli].z();
@@ -815,15 +816,15 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                     (
                         developmentScale_ 
                         + (1.0 - developmentScale_ )
-                        * (coord - developmentL1_)
-                        / (developmentL2_ - developmentL1_)
+                        * pow(coord - developmentL1_, 3)
+                        / pow(developmentL2_ - developmentL1_, 3)
                     );
                 F_total_[celli] *= 
                     (
                         developmentScale_ 
                         + (1.0 - developmentScale_ )
-                        * (coord - developmentL1_)
-                        / (developmentL2_ - developmentL1_)
+                        * pow(coord - developmentL1_, 3)
+                        / pow(developmentL2_ - developmentL1_, 3)
                     );
             }
         }
