@@ -95,6 +95,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
 	
 	volVectorField& F(KM.collisionalF(alphaPhi2));
+	volScalarField FSp(KM.F6Sp(alphaPhi2));
         KM.print();
 
         F_old = F;
@@ -108,6 +109,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + KM.divDevReff(U2)
          ==
           F 
+          + fvm::Sp(FSp, U2)
 	  - dp 
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2

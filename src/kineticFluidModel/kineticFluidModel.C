@@ -786,6 +786,24 @@ tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
             ) & U * U / pow(mag(U) + smallU, 2);
 }
 
+tmp<volScalarField> kineticFluidModel::F6Sp(surfaceScalarField& phi) const
+{
+	const volVectorField& U = dispersedPhase().U();
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	volScalarField j1 = J1();
+	volScalarField j2 = J2();
+
+	volScalarField x("x", 2.0 * j2 - 3.0 * j1);
+	return fvc::grad
+            (
+                //phi,
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() *  x
+            ) & U / pow(mag(U) + smallU, 2);
+}
+
+
+
 tmp<volScalarField> kineticFluidModel::g0() const
 {
 	const volScalarField alpha = dispersedPhase();
@@ -799,7 +817,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     volVectorField f3("F3", F3(phi));
     volVectorField f4("F4", F4(phi));
     volVectorField f5("F5", F5(phi));
-    volVectorField f6("F6", F6(phi));
+    //volVectorField f6("F6", F6(phi));
 
     volScalarField alpha = dispersedPhase();
 
@@ -808,7 +826,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     // other possibility is F3, F5, F6 should be divided by alpha
     // but I think first one is correct
 
-    F_total_ = alpha * (f1 + f6);
+    F_total_ = alpha * f1;
     if(useG_)
     {
         F_total_ = alpha * (f2 + f4 + f5) + f3;
@@ -898,12 +916,111 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         f3.write();
         f4.write();
         f5.write();
-        f6.write();
+        //f6.write();
     }
 
     F_total_.correctBoundaryConditions();
     return F_total_;
 }
+
+
+tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
+{
+    volScalarField f6("F6", F6Sp(phi));
+
+    volScalarField alpha = dispersedPhase();
+
+    // I think F1, F2, F4 needs to be multiplied bu alpha to get phase-sensitive
+    // formulation of OF momentum equation
+    // other possibility is F3, F5, F6 should be divided by alpha
+    // but I think first one is correct
+
+    volScalarField sp_total_ = alpha * f6;
+    //if(useG_)
+    //{
+        //F_total_ = alpha * (f2 + f4 + f5) + f3;
+    //}
+    sp_total_ *= scaleF_;
+
+    sp_total_.boundaryField() = 0;
+
+    forAll(mesh_.C(), celli)
+    {
+        sp_total_[celli] = min(sp_total_[celli], maxF_);
+    }
+
+    volScalarField F0("F0", sp_total_);
+
+    if(developmentLength_)
+    {
+
+        forAll(mesh_.C(), celli)
+        {
+            scalar coord = mesh_.C()[celli].z();
+
+            if(coord < developmentL2_ && coord > developmentL1_)
+            {
+                F0[celli] *= 
+                    (
+                        developmentScale_ 
+                        + (1.0 - developmentScale_ )
+                        * pow(coord - developmentL1_, 3)
+                        / pow(developmentL2_ - developmentL1_, 3)
+                    );
+                sp_total_[celli] *= 
+                    (
+                        developmentScale_ 
+                        + (1.0 - developmentScale_ )
+                        * pow(coord - developmentL1_, 3)
+                        / pow(developmentL2_ - developmentL1_, 3)
+                    );
+            }
+        }
+    }
+    
+    if(wallTreatment_)
+    {
+        const fvPatchList& patches = mesh_.boundary();
+
+        forAll(patches, patchi)
+        {
+                const fvPatch& curPatch = patches[patchi];
+                if (isType<wallFvPatch>(curPatch))
+                {
+                        forAll(curPatch, facei)
+                        {
+                                label faceCelli = curPatch.faceCells()[facei];
+                                F0[faceCelli] = 0;
+                                sp_total_[faceCelli] = 0;
+                        }
+                }
+        }
+    }
+
+    if(forceSmoothing_)
+    {
+        forAll(mesh_.C(), celli)
+        {
+                scalar count = 1.0;
+                forAll(mesh_.cellCells()[celli], cellj)
+                {
+                    label n_id = mesh_.cellCells()[celli][cellj];
+                    count += 1.0;
+                    sp_total_[celli] += F0[n_id];
+                }
+                sp_total_[celli] /= count;
+        }
+    }
+
+    if(mesh_.time().outputTime())
+    {
+        f6.write();
+    }
+
+    sp_total_.boundaryField() = 0;
+    return tmp<volScalarField> (sp_total_) ;
+}
+
 
 
 void kineticFluidModel::print()
