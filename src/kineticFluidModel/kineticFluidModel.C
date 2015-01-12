@@ -173,6 +173,18 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
         ),
         mesh_
     ),
+    sp_total_
+    (
+        IOobject
+        (
+            "sp-total",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_
+    ),
   e_(readScalar(kineticFluidModelDict_.lookup("e"))),
   maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
   aMin_(kineticFluidModelDict_.lookupOrDefault("aMin", 0.1)),
@@ -968,7 +980,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
 }
 
 
-tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
+volScalarField& kineticFluidModel::collisionalSp(surfaceScalarField& phi)
 {
     volScalarField f6("F6", F6Sp(phi));
     volScalarField f4("F4", F4Sp(phi));
@@ -981,14 +993,14 @@ tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
     // other possibility is F3, F5, F6 should be divided by alpha
     // but I think first one is correct
 
-    volScalarField sp_total_ = alpha * f6;
+    sp_total_ = alpha * f6;
     if(useG_)
     {
         sp_total_ += alpha * (/*f4 +*/ f5);
     }
     sp_total_ *= scaleF_;
 
-    sp_total_.boundaryField() = 0;
+    sp_total_.correctBoundaryConditions();
 
     forAll(mesh_.C(), celli)
     {
@@ -1065,8 +1077,8 @@ tmp<volScalarField> kineticFluidModel::collisionalSp(surfaceScalarField& phi)
         f5.write();
     }
 
-    sp_total_.boundaryField() = 0;
-    return sp_total_ * 1.0;
+    sp_total_.correctBoundaryConditions();
+    return sp_total_;
 }
 
 

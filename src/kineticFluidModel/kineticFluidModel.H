@@ -88,6 +88,7 @@ namespace Foam
     volScalarField epsilon_;
     volVectorField deltaG_;
     volVectorField F_total_;
+    volScalarField sp_total_;
     // coefficient of restitution
     scalar e_;
     // maximum value of total collisional force component
@@ -246,7 +247,7 @@ namespace Foam
     tmp<volScalarField> F5Sp(surfaceScalarField& phi) const;
     tmp<volScalarField> F6Sp(surfaceScalarField& phi) const;
     volVectorField& collisionalF(surfaceScalarField& phi);
-    tmp<volScalarField> collisionalSp(surfaceScalarField& phi);
+    volScalarField& collisionalSp(surfaceScalarField& phi);
 
     // Access
 
