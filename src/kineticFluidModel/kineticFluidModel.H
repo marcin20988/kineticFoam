@@ -122,6 +122,9 @@ namespace Foam
     // down to prevent nasty near-inlet effect
     Switch developmentLength_;
 
+    // additional dumping for small forces to prevent oscilations
+    Switch dumpSmallF_;
+
     // z-coordinate of begining of the development length
     scalar developmentL1_;
     // z-coordinate of end of the development length

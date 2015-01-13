@@ -197,6 +197,7 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   wallTreatment_(kineticFluidModelDict_.lookup("wallTreatment")),
   useG_(kineticFluidModelDict_.lookup("useG")),
   developmentLength_(kineticFluidModelDict_.lookup("developmentLength")),
+  dumpSmallF_(kineticFluidModelDict_.lookup("dumpSmallF")),
   developmentL1_(readScalar(kineticFluidModelDict_.lookup("developmentLstart"))),
   developmentL2_(readScalar(kineticFluidModelDict_.lookup("developmentLend"))),
   developmentScale_(readScalar(kineticFluidModelDict_.lookup("developmentScale")))
@@ -965,6 +966,29 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         }
     }
 
+    if(dumpSmallF_)
+    {
+        forAll(mesh_.C(), celli)
+        {
+            scalar x = F_total_[celli].x();
+            scalar y = F_total_[celli].y();
+            scalar z = F_total_[celli].z();
+
+            if(x < 1.0f)
+            {
+                F_total_[celli].x() = pow(x, 4);
+            }
+            if(y < 1.0f)
+            {
+                F_total_[celli].y() = pow(y, 4);
+            }
+            if(z < 1.0f)
+            {
+                F_total_[celli].z() = pow(z, 4);
+            }
+        }
+    }
+
     if(mesh_.time().outputTime())
     {
         f1.write();
@@ -1067,6 +1091,19 @@ volScalarField& kineticFluidModel::collisionalSp(surfaceScalarField& phi)
                     sp_total_[celli] += F0[n_id];
                 }
                 sp_total_[celli] /= count;
+        }
+    }
+
+    if(dumpSmallF_)
+    {
+        forAll(mesh_.C(), celli)
+        {
+            scalar x = sp_total_[celli];
+
+            if(x < 1.0f)
+            {
+                sp_total_[celli] = pow(x, 4);
+            }
         }
     }
 
