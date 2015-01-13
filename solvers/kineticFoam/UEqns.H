@@ -66,6 +66,11 @@ volScalarField dragCoeff(fluid.dragCoeff());
         );
         mrfZones.addCoriolis(alpha1 + virtualMassCoeff/rho1, U1Eqn);
         U1Eqn.relax();
+        if(pimple.momentumPredictor())
+        {
+            solve(U1Eqn == - alpha1 * fvc::grad(p) / rho1);
+            //fvOptions.correct(U1);
+        }
     }
 
     {
@@ -128,7 +133,15 @@ volScalarField dragCoeff(fluid.dragCoeff());
         );
         mrfZones.addCoriolis(alpha2 + virtualMassCoeff/rho2, U2Eqn);
         U2Eqn.relax();
+
+        if(pimple.momentumPredictor())
+        {
+            solve(U2Eqn == - alpha2 * fvc::grad(p) / rho2);
+            //fvOptions.correct(U2);
+        }
     }
+
+
 }
 
 
