@@ -974,17 +974,17 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
             scalar y = F_total_[celli].y();
             scalar z = F_total_[celli].z();
 
-            if(x < 1.0f)
+            if(abs(x) < 1.0)
             {
-                F_total_[celli].x() = pow(x, 4);
+                F_total_[celli].x() = pow(x, 3);
             }
-            if(y < 1.0f)
+            if(abs(y) < 1.0)
             {
-                F_total_[celli].y() = pow(y, 4);
+                F_total_[celli].y() = pow(y, 3);
             }
-            if(z < 1.0f)
+            if(abs(z) < 1.0)
             {
-                F_total_[celli].z() = pow(z, 4);
+                F_total_[celli].z() = pow(z, 3);
             }
         }
     }
@@ -1100,9 +1100,9 @@ volScalarField& kineticFluidModel::collisionalSp(surfaceScalarField& phi)
         {
             scalar x = sp_total_[celli];
 
-            if(x < 1.0f)
+            if(abs(x) < 1.0)
             {
-                sp_total_[celli] = pow(x, 4);
+                sp_total_[celli] = pow(x, 3);
             }
         }
     }
