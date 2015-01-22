@@ -148,6 +148,34 @@ int main(int argc, char *argv[])
         beta1.write();
         beta2.write();
         a.write();
+
+        volVectorField dragF
+            (
+                "dragF",
+                cd 
+                * (
+                    KM.dispersedPhase().U() 
+                    - fluid.otherPhase(KM.dispersedPhase()).U()
+                  )
+            );
+
+        dragF.write();
+
+        volVectorField gradP
+            (
+                "gradP",
+                - fvc::grad(p) / KM.dispersedPhase().rho()
+            );
+        
+        volVectorField spVector
+            (
+                "spVector",
+                KM.dispersedPhase().U()
+                * KM.collisionalSp(alphaPhi2)
+            );
+
+        gradP.write();
+        spVector.write();
     }
 
 
