@@ -133,6 +133,19 @@
     Info << "Creating kinetic model class\n" << endl;
     kineticFluidModel KM(fluid);
 
+    volVectorField dp
+    (
+        IOobject
+        (
+            "dp",
+            runTime.timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedVector("dp", dimLength / pow(dimTime, 2), vector(0,0,0))
+    );
 
     volVectorField F_old
     (

@@ -340,8 +340,10 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 
     volScalarField correctedViscosity = 0.5 * 8.0 / 9.0 
         * a_ * (1.0 / (1.0 + E1_ + 2.0 * E2_)) * pow(k, 2);
-
-    correctedViscosity += dispersedPhase().nu();
+    //correctedViscosity += dispersedPhase().nu();
+    
+    volScalarField nuEff = dispersedPhase().turbulence().nuEff();
+    correctedViscosity.boundaryField() = nuEff.boundaryField();
 
     if(!useViscosityCorrection_)
     {

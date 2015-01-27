@@ -97,7 +97,9 @@ volScalarField dragCoeff(fluid.dragCoeff());
 
         Info << "Calculating pressure correction" << endl;
 	volScalarField X2 = KM.pressureCorrection();
-	volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
+	//volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
+	dp = 2.0 / 3.0 * fvc::grad(X2 * k * alpha2);
+        dp.correctBoundaryConditions();
 	
 	volVectorField& F(KM.collisionalF(alphaPhi2));
 	volScalarField FSp(KM.collisionalSp(alphaPhi2));
