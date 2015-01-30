@@ -89,6 +89,7 @@ namespace Foam
     volVectorField deltaG_;
     volVectorField F_total_;
     volScalarField sp_total_;
+    volScalarField NuRatio_;
     // coefficient of restitution
     scalar e_;
     // maximum value of total collisional force component

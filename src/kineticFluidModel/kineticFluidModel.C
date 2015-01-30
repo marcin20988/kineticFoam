@@ -185,6 +185,18 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
         ),
         mesh_
     ),
+    NuRatio_
+    (
+        IOobject
+        (
+            "NuRatio",
+            mesh_.time().timeName(),
+            mesh_,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh_
+    ),
   e_(readScalar(kineticFluidModelDict_.lookup("e"))),
   maxF_(readScalar(kineticFluidModelDict_.lookup("maxF"))),
   aMin_(kineticFluidModelDict_.lookupOrDefault("aMin", 0.1)),
@@ -343,20 +355,21 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
     //correctedViscosity += dispersedPhase().nu();
     
     volScalarField nuEff = dispersedPhase().turbulence().nuEff();
-    correctedViscosity.boundaryField() = nuEff.boundaryField();
+    //correctedViscosity.boundaryField() = nuEff.boundaryField();
 
     if(!useViscosityCorrection_)
     {
         correctedViscosity = dispersedPhase().turbulence().nut();
     }
 
-    volScalarField ratio = correctedViscosity 
+    NuRatio_ = correctedViscosity 
         / dispersedPhase().turbulence().nuEff();
-
-
-    Info << "Ratio of viscosity correction: " << ratio.weightedAverage(k.mesh().V()).value()
-        <<" min: " << min(ratio).value()
-        <<" max: " << max(ratio).value() << endl;
+    NuRatio_.correctBoundaryConditions();
+    
+    correctedViscosity = NuRatio_ * dispersedPhase().turbulence().nuEff();
+    Info << "Ratio of viscosity correction: " << NuRatio_.weightedAverage(k.mesh().V()).value()
+        <<" min: " << min(NuRatio_).value()
+        <<" max: " << max(NuRatio_).value() << endl;
 
     return
         (
