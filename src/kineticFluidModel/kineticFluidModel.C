@@ -210,6 +210,7 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   useG_(kineticFluidModelDict_.lookup("useG")),
   developmentLength_(kineticFluidModelDict_.lookup("developmentLength")),
   dumpSmallF_(kineticFluidModelDict_.lookup("dumpSmallF")),
+  analyticalLimit_(kineticFluidModelDict_.lookup("analyticalLimit")),
   developmentL1_(readScalar(kineticFluidModelDict_.lookup("developmentLstart"))),
   developmentL2_(readScalar(kineticFluidModelDict_.lookup("developmentLend"))),
   developmentScale_(readScalar(kineticFluidModelDict_.lookup("developmentScale")))
@@ -1012,6 +1013,45 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         //f4.write();
         //f5.write();
         //f6.write();
+    }
+
+    if(analyticalLimit_)
+    {
+        volVectorField u_max
+            (
+                "uMax",
+                fvc::grad
+                (
+                    mag(dispersedPhase().U()) 
+                    + 3.0 * sqrt(4.0 * T_ / 3.0)
+                )
+            );
+        if(mesh_.time().outputTime())
+        {
+            u_max.write();
+        }
+
+        forAll(mesh_.C(), celli)
+        {
+            scalar x = F_total_[celli].x();
+            scalar y = F_total_[celli].y();
+            scalar z = F_total_[celli].z();
+            scalar xMax = u_max[celli].x();
+            scalar yMax = u_max[celli].y();
+            scalar zMax = u_max[celli].z();
+            if(abs(x) > abs(xMax))
+            {
+                F_total_[celli].x() = xMax;
+            }
+            if(abs(y) > abs(yMax))
+            {
+                F_total_[celli].y() = yMax;
+            }
+            if(abs(z) > abs(zMax))
+            {
+                F_total_[celli].z() = zMax;
+            }
+        }
     }
 
     F_total_.correctBoundaryConditions();

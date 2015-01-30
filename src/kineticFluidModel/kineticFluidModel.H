@@ -126,6 +126,9 @@ namespace Foam
     // additional dumping for small forces to prevent oscilations
     Switch dumpSmallF_;
 
+    // additional dumping for small forces to prevent oscilations
+    Switch analyticalLimit_;
+
     // z-coordinate of begining of the development length
     scalar developmentL1_;
     // z-coordinate of end of the development length
