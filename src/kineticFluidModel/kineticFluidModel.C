@@ -360,7 +360,7 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 
     if(!useViscosityCorrection_)
     {
-        correctedViscosity = dispersedPhase().turbulence().nut();
+        correctedViscosity = dispersedPhase().turbulence().nuEff();
     }
 
     NuRatio_ = correctedViscosity 
@@ -703,42 +703,12 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 
 	volScalarField j1("J1", J1());
 
-	volVectorField f1 = fvc::grad
+        return fvc::grad
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
                 * g0() * j1,
-                "F1First"
+                "F1"
             );
-	volVectorField f2 = fvc::grad
-            ( 
-                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
-                * g0() * j1,
-                "F1Second"
-            );
-
-        forAll(mesh_.C(), celli)
-        {
-            scalar x = f1[celli].x();
-            scalar y = f1[celli].y();
-            scalar z = f1[celli].z();
-            scalar xMax = f2[celli].x();
-            scalar yMax = f2[celli].y();
-            scalar zMax = f2[celli].z();
-            if(abs(x) > abs(xMax))
-            {
-                f1[celli].x() = xMax;
-            }
-            if(abs(y) > abs(yMax))
-            {
-                f1[celli].y() = yMax;
-            }
-            if(abs(z) > abs(zMax))
-            {
-                f1[celli].z() = zMax;
-            }
-        }
-
-        return f1 * 1.0;
 }
 
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
