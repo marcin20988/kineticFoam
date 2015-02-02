@@ -129,6 +129,9 @@ namespace Foam
     // additional dumping for small forces to prevent oscilations
     Switch analyticalLimit_;
 
+    //use "turbulence dispersion"?
+    Switch dp_;
+
     // z-coordinate of begining of the development length
     scalar developmentL1_;
     // z-coordinate of end of the development length
@@ -242,6 +245,10 @@ namespace Foam
         return maxF_;
     }
     
+    Switch dp() const
+    {
+        return dp_;
+    }
 
     // this given the force equal to gradient (J1 + u0 dot Delta g R sigma J_3 / u0)
     tmp<volVectorField> F1(surfaceScalarField& phi) const;

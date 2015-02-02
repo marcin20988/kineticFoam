@@ -211,6 +211,7 @@ kineticFluidModel::kineticFluidModel(const twoPhaseSystem& fluid):
   developmentLength_(kineticFluidModelDict_.lookup("developmentLength")),
   dumpSmallF_(kineticFluidModelDict_.lookup("dumpSmallF")),
   analyticalLimit_(kineticFluidModelDict_.lookup("analyticalLimit")),
+  dp_(kineticFluidModelDict_.lookup("dp")),
   developmentL1_(readScalar(kineticFluidModelDict_.lookup("developmentLstart"))),
   developmentL2_(readScalar(kineticFluidModelDict_.lookup("developmentLend"))),
   developmentScale_(readScalar(kineticFluidModelDict_.lookup("developmentScale")))
