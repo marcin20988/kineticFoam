@@ -890,9 +890,9 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     volVectorField f1("F1", F1(phi));
     volVectorField f2("F2", F2(phi));
     volVectorField f3("F3", F3(phi));
-    //volVectorField f4("F4", F4(phi));
-    //volVectorField f5("F5", F5(phi));
-    //volVectorField f6("F6", F6(phi));
+    volVectorField f4("F4", F4(phi));
+    volVectorField f5("F5", F5(phi));
+    volVectorField f6("F6", F6(phi));
 
     volScalarField alpha = dispersedPhase();
 
@@ -901,7 +901,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     // other possibility is F3, F5, F6 should be divided by alpha
     // but I think first one is correct
 
-    F_total_ = alpha * f1;
+    F_total_ = alpha * (f1 + f6);
     if(useG_)
     {
         F_total_ += alpha * (f2) + f3;
@@ -919,6 +919,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         F_total_[celli].x() = max(F_total_[celli].x(), -maxF_);
         F_total_[celli].y() = max(F_total_[celli].y(), -maxF_);
         F_total_[celli].z() = max(F_total_[celli].z(), -maxF_);
+        F_total_[celli].z() = 0.0f;
     }
 
     volVectorField F0("F0", F_total_);

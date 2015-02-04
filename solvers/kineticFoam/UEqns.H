@@ -128,7 +128,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + KM.divDevReff(U2)
          ==
           F 
-          + fvm::Sp(FSp, U2)
+          //+ fvm::Sp(FSp, U2)
 	  - dp 
           - fvm::Sp(dragCoeff/rho2, U2)
           + alpha1*alpha2/rho2
