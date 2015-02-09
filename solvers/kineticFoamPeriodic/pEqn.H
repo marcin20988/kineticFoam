@@ -236,7 +236,7 @@
                     rAlphaAU2f
                    *(
                         (g & mesh.Sf())
-                      + (fvc::interpolate(F_old) & mesh.Sf())
+                      + epsilonF * (fvc::interpolate(F_old) & mesh.Sf())
                       + mSfGradp/fvc::interpolate(rho2)
                     )
                   - phiP2

@@ -1,4 +1,4 @@
-add_executable(kineticFoam kineticFoam.C)
+add_executable(kineticFoamPeriodic kineticFoam.C)
 
 # twoPhaseEuler libraries
 include_directories ("$ENV{FOAM_SOLVERS}/multiphase/twoPhaseEulerFoam/twoPhaseSystem/lnInclude")
@@ -19,7 +19,7 @@ include_directories ("${PROJECT_SOURCE_DIR}/src/kineticFluidModel/relaxationTime
 
 
 
-target_link_openfoam_libraries(kineticFoam
+target_link_openfoam_libraries(kineticFoamPeriodic
     fluidThermophysicalModels
     specie
     turbulenceModels
@@ -32,6 +32,6 @@ target_link_openfoam_libraries(kineticFoam
     phaseIncompressibleTurbulenceModels
     OpenFOAM)
 
-  target_link_libraries(kineticFoam kineticFluidModel)
+  target_link_libraries(kineticFoamPeriodic kineticFluidModel)
 
-set_target_properties(kineticFoam PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$ENV{FOAM_USER_APPBIN}")
+set_target_properties(kineticFoamPeriodic PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$ENV{FOAM_USER_APPBIN}")
