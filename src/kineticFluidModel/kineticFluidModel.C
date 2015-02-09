@@ -272,6 +272,11 @@ void kineticFluidModel::update
     const int check
 )
 {
+   
+  dictionary dict = mesh_.solutionDict();
+  scaleF_ = dict.lookupOrDefault("scaleF", scaleF_);
+  Info << "scaleF: " << scaleF_ << endl;
+
   //Info << "Updating kinetic model" << endl;
   T_ = T;
   epsilon_ = epsilon;
@@ -703,13 +708,29 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 	const volScalarField rad = g0();
 
 	volScalarField j1("J1", J1());
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
 
         return fvc::grad
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
                 * g0() * j1,
                 "F1"
-            );
+            )
+            +
+            eF * 
+            fvc::laplacian
+            ( 
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() * j1 
+            )
+            ;
 }
 
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
@@ -904,7 +925,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     F_total_ = alpha * (f1 + f6);
     if(useG_)
     {
-        F_total_ += alpha * (f2) + f3;
+        F_total_ += alpha * (f2 + f5) + f3;
     }
     F_total_ *= scaleF_;
 
@@ -919,7 +940,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         F_total_[celli].x() = max(F_total_[celli].x(), -maxF_);
         F_total_[celli].y() = max(F_total_[celli].y(), -maxF_);
         F_total_[celli].z() = max(F_total_[celli].z(), -maxF_);
-        F_total_[celli].z() = 0.0f;
+        //F_total_[celli].z() = 0.0f;
     }
 
     volVectorField F0("F0", F_total_);
@@ -944,8 +965,8 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                     (
                         developmentScale_ 
                         + (1.0 - developmentScale_ )
-                        * pow(coord - developmentL1_, 3)
-                        / pow(developmentL2_ - developmentL1_, 3)
+                        * pow(coord - developmentL1_, 1)
+                        / pow(developmentL2_ - developmentL1_, 1)
                     );
             }
         }
