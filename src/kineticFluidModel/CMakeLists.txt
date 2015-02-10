@@ -1,6 +1,7 @@
 file(GLOB lib_source_files
   kineticFluidModel.C
   relaxationTime/fullModel.C
+  relaxationTime/turbulentModel.C
   relaxationTime/relaxationTime.C
 )
 

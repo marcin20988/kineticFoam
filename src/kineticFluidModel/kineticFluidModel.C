@@ -357,8 +357,9 @@ tmp<fvVectorMatrix> kineticFluidModel::divDevReff(const volVectorField& U)
 {
     volScalarField k =  temp();
 
-    volScalarField correctedViscosity = 0.5 * 8.0 / 9.0 
-        * a_ * (1.0 / (1.0 + E1_ + 2.0 * E2_)) * pow(k, 2);
+    volScalarField correctedViscosity = 8.0 / 9.0 
+        * a_ * (1.0 / (1.0 + E1_ + 2.0 * E2_)) * pow(k, 2) 
+        + dispersedPhase().nu();
     //correctedViscosity += dispersedPhase().nu();
     
     volScalarField nuEff = dispersedPhase().turbulence().nuEff();
@@ -945,8 +946,19 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
 
     volVectorField F0("F0", F_total_);
 
+
     if(developmentLength_)
     {
+        dimensionedScalar dL("dL", dimLength, 1.0f);
+        volScalarField dampingFunction
+            (
+                "dampingFunction",
+                developmentScale_ 
+                + (1.0 - developmentScale_ )
+                * pow(mesh_.C().component(2) / dL - developmentL1_, 3)
+                / pow(developmentL2_ - developmentL1_, 3)
+            );
+        dampingFunction = min(dampingFunction, scalar(1.0));
 
         forAll(mesh_.C(), celli)
         {
@@ -954,21 +966,14 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
 
             if(coord < developmentL2_ && coord > developmentL1_)
             {
-                F0[celli] *= 
-                    (
-                        developmentScale_ 
-                        + (1.0 - developmentScale_ )
-                        * pow(coord - developmentL1_, 3)
-                        / pow(developmentL2_ - developmentL1_, 3)
-                    );
-                F_total_[celli] *= 
-                    (
-                        developmentScale_ 
-                        + (1.0 - developmentScale_ )
-                        * pow(coord - developmentL1_, 1)
-                        / pow(developmentL2_ - developmentL1_, 1)
-                    );
+                F0[celli] *= dampingFunction[celli];
+                F_total_[celli] *= dampingFunction[celli];
             }
+        }
+
+        if(mesh_.time().outputTime())
+        {
+            dampingFunction.write();
         }
     }
     

@@ -59,7 +59,8 @@ turbulentModel::turbulentModel
   const kineticFluidModel& KM
 ):
   relaxationTime(fluid, kineticDict, dispersedPhaseName, dispersedPhase, KM),
-  minTau_("minTau", dimTime, kineticDict.lookup("minTau"))
+  minTau_("minTau", dimTime, kineticDict.lookup("minTau")),
+  maxTau_("maxTau", dimTime, kineticDict.lookup("maxTau"))
 {
 };
 
@@ -72,7 +73,7 @@ turbulentModel::turbulentModel
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
 
-tmp<volScalarField> turbulentModel::field() const
+tmp<volScalarField> turbulentModel::field()
 {
   volScalarField nu = dispersedPhase_.turbulence().nuEff();
   volScalarField nut = dispersedPhase_.turbulence().nut() 
@@ -93,6 +94,35 @@ tmp<volScalarField> turbulentModel::field() const
     );
 }
 
+tmp<volScalarField> turbulentModel::total()
+{
+  volScalarField nu = dispersedPhase_.turbulence().nut();
+  volScalarField k = KM_.temp(); //dispersedPhase_.turbulence().k();
+
+  volScalarField A = 
+      min
+      (
+	      27.0 * nu / ( 8.0 * k)
+	      * (1.0 + KM_.E1() + 2.0 * KM_.E2()),
+	      maxTau_
+      );
+
+  tau_ = max(A, minTau_);
+  tau_.correctBoundaryConditions();
+
+  return tau_;
+}
+
+
+tmp<volScalarField> turbulentModel::laminar()
+{
+    return total();
+}
+
+tmp<volScalarField> turbulentModel::turbulent()
+{
+    return total();
+}
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
 

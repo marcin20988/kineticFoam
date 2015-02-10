@@ -55,6 +55,7 @@ class turbulentModel:
 {
     // Private data
     const dimensionedScalar minTau_;
+    const dimensionedScalar maxTau_;
 
         //- Description of data_
 
@@ -108,7 +109,10 @@ public:
 
         // Access
 
-	tmp<volScalarField> field() const;
+	tmp<volScalarField> field();
+	tmp<volScalarField> total();
+	tmp<volScalarField> turbulent();
+	tmp<volScalarField> laminar();
 
         // Check
 
