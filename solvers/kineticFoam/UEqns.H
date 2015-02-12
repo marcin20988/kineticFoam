@@ -114,7 +114,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
         }
 	
 	volVectorField& F(KM.collisionalF(alphaPhi2));
-	volScalarField FSp(KM.collisionalSp(alphaPhi2));
+	//volScalarField FSp(KM.collisionalSp(alphaPhi2));
         KM.print();
 
         F_old = F;
