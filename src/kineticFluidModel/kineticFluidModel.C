@@ -332,7 +332,7 @@ void kineticFluidModel::update
   E1_.correctBoundaryConditions();
   E2_.correctBoundaryConditions();
 
-  R_ = 1.0 + E1_ + E2_;
+  R_ = 1.0 / (1.0 + E1_ + E2_);
 
 
   a_ = 2.0 * tau / (k *(1.0 - 6.0 * tau * cd));
@@ -923,7 +923,8 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     // other possibility is F3, F5, F6 should be divided by alpha
     // but I think first one is correct
 
-    F_total_ = alpha * (f1 + f6);
+    //F_total_ = alpha * (f1 + f6);
+    F_total_ = alpha * f1;
     if(useG_)
     {
         F_total_ += alpha * (f2 + f5) + f3;
