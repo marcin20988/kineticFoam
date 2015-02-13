@@ -977,14 +977,14 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                                 label faceCelli = curPatch.faceCells()[facei];
                                 F0[faceCelli] = vector(0, 0, 0);
                                 F_total_[faceCelli] = vector(0, 0, 0);
-                                scalar count = 1.0;
-                                forAll(mesh_.cellCells()[faceCelli], cellj)
-                                {
-                                    label n_id = mesh_.cellCells()[faceCelli][cellj];
-                                    count += 1.0;
-                                    F_total_[faceCelli] += F0[n_id];
-                                }
-                                F_total_[faceCelli] /= count;
+       /*                         scalar count = 1.0;*/
+                                //forAll(mesh_.cellCells()[faceCelli], cellj)
+                                //{
+                                    //label n_id = mesh_.cellCells()[faceCelli][cellj];
+                                    //count += 1.0;
+                                    //F_total_[faceCelli] += F0[n_id];
+                                //}
+                                /*F_total_[faceCelli] /= count;*/
                         }
                 }
         }
