@@ -753,11 +753,28 @@ tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
                 )
             );
 
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
+
 	return fvc::grad
             (
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
                 * g0() * x
-            );
+            )
+            +
+            eF * 
+            fvc::laplacian
+            ( 
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() * x
+            )
+            ;
 }
 
 tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
@@ -773,7 +790,23 @@ tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
                 * 6.0 * (1.0 + e_) * pow(R_, 3) * dispersedPhase().d() 
                 * pow(dispersedPhase(), 2) * g0()
             );
+
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
+
 	return fvc::div(phi, x) / (mag(U) + smallU);
+            //+
+            //fvc::laplacian
+            //( 
+                //x * dimensionedScalar("epsilonF", dimLength, epsilonF)
+            //)
+            //;
 }
 
 tmp<volVectorField> kineticFluidModel::F4(surfaceScalarField& phi) const
@@ -789,7 +822,23 @@ tmp<volVectorField> kineticFluidModel::F4(surfaceScalarField& phi) const
                 * 6.0 * (1.0 + e_) * pow(R_, 3) * dispersedPhase().d() 
                 * pow(dispersedPhase(), 2) * g0()
             );
+
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
+
         return fvc::div(x) * U / (mag(U) + smallU);
+            //+
+            //fvc::laplacian
+            //( 
+                //x * dimensionedScalar("epsilonF", dimLength, epsilonF)
+            //)
+            //;
 }
 
 tmp<volScalarField> kineticFluidModel::F4Sp(surfaceScalarField& phi) const
@@ -826,7 +875,24 @@ tmp<volVectorField> kineticFluidModel::F5(surfaceScalarField& phi) const
                 * dispersedPhase().d()
                 * (U & deltaG_) * (2.0 * j4 - 5.0 * j3) 
                 / (mag(U) + smallU)             );
-	return (fvc::grad(x) & U) * U / pow(mag(U) + smallU, 2);
+
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
+
+	return (fvc::grad(x) & U) * U / pow(mag(U) + smallU, 2)
+            +
+            eF * 
+            fvc::laplacian
+            ( 
+                x
+            )
+            ;
 }
 
 tmp<volScalarField> kineticFluidModel::F5Sp(surfaceScalarField& phi) const
@@ -862,11 +928,29 @@ tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
 	volScalarField j2 = J2();
 
 	volScalarField x("x", 2.0 * j2 - 3.0 * j1);
+
+        scalar epsilonF(kineticFluidModelDict_.lookupOrDefault("eF", 1e-08));
+        epsilonF *= scaleF_;
+        dimensionedVector eF
+            (
+                "eF", 
+                dimLength, 
+                vector(epsilonF, epsilonF, epsilonF)
+            );
+
 	return fvc::grad
             (
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
                 * g0() *  x
-            );
+            )
+            +
+            eF * 
+            fvc::laplacian
+            ( 
+                6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                * g0() * x
+            )
+            ;
 }
 
 tmp<volScalarField> kineticFluidModel::F6Sp(surfaceScalarField& phi) const

@@ -250,6 +250,25 @@ namespace Foam
         return dp_;
     }
 
+    Switch developmentLength() const
+    {
+        return developmentLength_;
+    }
+
+    tmp<volScalarField> dampFunction()
+    {
+        dimensionedScalar dL("dL", dimLength, 1.0f);
+        volScalarField dampingFunction
+            (
+                "dampingFunction",
+                developmentScale_ 
+                + (1.0 - developmentScale_ )
+                * pow(mesh_.C().component(2) / dL - developmentL1_, 3)
+                / pow(developmentL2_ - developmentL1_, 3)
+            );
+        return min(dampingFunction, scalar(1.0));
+    }
+
     // this given the force equal to gradient (J1 + u0 dot Delta g R sigma J_3 / u0)
     tmp<volVectorField> F1(surfaceScalarField& phi) const;
     tmp<volVectorField> F2(surfaceScalarField& phi) const;

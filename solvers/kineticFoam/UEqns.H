@@ -118,6 +118,11 @@ volScalarField dragCoeff(fluid.dragCoeff());
         KM.print();
 
         F_old = F;
+        if(KM.developmentLength())
+        {
+            dp *= KM.dampFunction();
+        }
+
 
         U2Eqn =
         (
@@ -127,7 +132,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
           //+ phase2.turbulence().divDevReff(U2)
           + KM.divDevReff(U2)
          ==
-          F 
+           F 
           //+ fvm::Sp(FSp, U2)
 	  - dp 
           - fvm::Sp(dragCoeff/rho2, U2)
