@@ -252,6 +252,12 @@ const phaseModel& kineticFluidModel::dispersedPhase() const
   }
 };
 
+
+const phaseModel& kineticFluidModel::continuousPhase() const
+{
+    return fluid_.otherPhase(dispersedPhase());
+};
+
 // * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * * //
 
 void kineticFluidModel::operator=(const kineticFluidModel& rhs)

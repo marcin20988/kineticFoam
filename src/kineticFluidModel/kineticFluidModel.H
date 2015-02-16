@@ -170,6 +170,7 @@ namespace Foam
 
     // Member Functions
     const phaseModel& dispersedPhase() const;
+    const phaseModel& continuousPhase() const;
 
     void update(const volScalarField& T, const volScalarField& epsilon, const int check = -1);
 
