@@ -283,6 +283,8 @@ namespace Foam
     volVectorField& collisionalF(surfaceScalarField& phi);
     volScalarField& collisionalSp(surfaceScalarField& phi);
 
+    tmp<volVectorField> velocity() const;
+
     // Access
 
     // Check
