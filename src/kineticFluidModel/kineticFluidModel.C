@@ -507,6 +507,27 @@ tmp<volScalarField> kineticFluidModel::J1() const
 		<<" min: " << min(a).value()
 		<<" max: " << max(a).value() << endl;
         volScalarField j1 = beta1() + pow(a, 2) * beta2();
+        if(mesh_.time().outputTime())
+        {
+            volScalarField aField("aField", a);
+            volScalarField b1("b1", beta1());
+            volScalarField b2S("b2Asqr", beta2() * pow(a, 2));
+            volScalarField b2("b2", beta2());
+            aField.write();
+            b1.write();
+            b2.write();
+            b2S.write();
+            volScalarField j1Limit
+            (
+                "J1Limit",
+                beta(-0.08, -0.68, -0.96) * pow
+                (
+                    mag(dispersedPhase().U()), 
+                    2
+                )
+            );
+            j1Limit.write();
+        }
         return -T_ * j1;
             //min
             //(
@@ -725,42 +746,44 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
         {
             volScalarField R2("Rsrq", pow(R_, 2));
             x1.write();
+            j1.write();
             rad.write();
             R2.write();
         }
 
-        if(wallTreatment_)
-        {
+        /*if(wallTreatment_)*/
+        //{
 
-            //volScalarField jWall = 
-                //beta(-0.08, -0.68, -0.96) * pow
-                //(
-                    //mag(dispersedPhase().U()), 
-                    //2
-                //);
-            const fvPatchList& patches = mesh_.boundary();
+            ////volScalarField jWall = 
+                ////beta(-0.08, -0.68, -0.96) * pow
+                ////(
+                    ////mag(dispersedPhase().U()), 
+                    ////2
+                ////);
+            //const fvPatchList& patches = mesh_.boundary();
 
-            forAll(patches, patchi)
-            {
-                const fvPatch& curPatch = patches[patchi];
-                if (isType<wallFvPatch>(curPatch))
-                {
-                    forAll(curPatch, facei)
-                    {
-                        j1[facei] = 0.0;
-                    }
-                }
-            }
-        }
+            //forAll(patches, patchi)
+            //{
+                //const fvPatch& curPatch = patches[patchi];
+                //if (isType<wallFvPatch>(curPatch))
+                //{
+                    //forAll(curPatch, facei)
+                    //{
+                        //j1[facei] = 0.0;
+                    //}
+                //}
+            //}
+        //}
 
-        return fvc::grad
+        return dispersedPhase() * 
+            fvc::grad
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
                 * g0() * j1,
                 "F1"
             )
             +
-            eF * 
+            eF * dispersedPhase() * 
             fvc::laplacian
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
@@ -796,13 +819,15 @@ tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
                 vector(epsilonF, epsilonF, epsilonF)
             );
 
-	return fvc::grad
+	return dispersedPhase() * 
+            fvc::grad
             (
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
-                * g0() * x
+                * g0() * x,
+                "F2"
             )
             +
-            eF * 
+            eF * dispersedPhase() *  
             fvc::laplacian
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
@@ -919,9 +944,10 @@ tmp<volVectorField> kineticFluidModel::F5(surfaceScalarField& phi) const
                 vector(epsilonF, epsilonF, epsilonF)
             );
 
-	return (fvc::grad(x) & U) * U / pow(mag(U) + smallU, 2)
+	return dispersedPhase() * 
+            (fvc::grad(x, "F5") & U) * U / pow(mag(U) + smallU, 2)
             +
-            eF * 
+            eF * dispersedPhase() * 
             fvc::laplacian
             ( 
                 x
@@ -972,13 +998,27 @@ tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
                 vector(epsilonF, epsilonF, epsilonF)
             );
 
-	return fvc::grad
-            (
+        if(mesh_.time().outputTime())
+        {
+            volScalarField x6
+                (
+                    "x6",
+                    6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
+                    * g0() *  x
+                );
+
+                x6.write();
+        }
+
+	return dispersedPhase() * 
+            fvc::grad
+            (   
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
-                * g0() *  x
+                * g0() *  x,
+                "F6"
             )
             +
-            eF * 
+            eF * dispersedPhase() * 
             fvc::laplacian
             ( 
                 6.0 * (1.0 + e_) * pow(R_, 2) * pow(dispersedPhase(), 2) 
@@ -1009,9 +1049,10 @@ tmp<volScalarField> kineticFluidModel::g0() const
 {
 	const volScalarField alpha = dispersedPhase();
 	//return (2.0 - alpha) / (2.0 * pow(1.0 - alpha, 3));
-	return 1.0 / (1.0 - alpha) 
+	return 1.0 / (1.0 - alpha)
             + 3.0 * alpha / (2.0 * sqr(1.0 - alpha))
-            + sqr(alpha) / (2.0 * pow3(1.0 - alpha));
+            + sqr(alpha) / (2.0 * pow3(1.0 - alpha))
+            ;
 }
 
 volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
@@ -1030,11 +1071,10 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     // other possibility is F3, F5, F6 should be divided by alpha
     // but I think first one is correct
 
-    F_total_ = alpha * f1;
-    //F_total_ = alpha * (f1 + f6);
+    F_total_ = f1 + f6;
     if(useG_)
     {
-        F_total_ += alpha * (f2 + f5 + f4) + f3;
+        F_total_ += f2 + f5 + f4 + f3;
     }
     F_total_ *= scaleF_;
 
@@ -1097,8 +1137,8 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                         forAll(curPatch, facei)
                         {
                                 label faceCelli = curPatch.faceCells()[facei];
-                                //F0[faceCelli] = vector(0, 0, 0);
-                                //F_total_[faceCelli] = vector(0, 0, 0);
+                                F0[faceCelli] = vector(0, 0, 0);
+                                F_total_[faceCelli] = vector(0, 0, 0);
                                 //scalar count = 1.0;
                                 //forAll(mesh_.cellCells()[faceCelli], cellj)
                                 //{

@@ -98,7 +98,9 @@ tmp<volScalarField> constantModel::total()
           //dimensionedScalar("value", dimTime, value_)
       );
 
-  return value * 1.0;
+  tau_ = 1.0 * value;
+
+  return tau_;
 }
 // * * * * * * * * * * * * * * Friend Functions  * * * * * * * * * * * * * * //
 
