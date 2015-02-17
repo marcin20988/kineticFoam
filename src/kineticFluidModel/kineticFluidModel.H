@@ -59,6 +59,7 @@ namespace Foam
     // Private data
     const twoPhaseSystem& fluid_;
     const fvMesh& mesh_;
+    const dimensionedVector g_;
 
 
     //- Description of data_
@@ -149,7 +150,7 @@ namespace Foam
 
     // Constructors
 
-    kineticFluidModel(const twoPhaseSystem& fluid);
+    kineticFluidModel(const twoPhaseSystem& fluid, const dimensionedVector& g);
 
     //- Construct from components
 
@@ -161,7 +162,7 @@ namespace Foam
     // Selectors
 
     //- Select null constructed
-    static autoPtr<kineticFluidModel> New(const twoPhaseSystem& fluid);
+    static autoPtr<kineticFluidModel> New(const twoPhaseSystem& fluid, const dimensionedVector g);
 
 
     //- Destructor

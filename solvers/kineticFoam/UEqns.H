@@ -57,7 +57,6 @@ volScalarField dragCoeff(fluid.dragCoeff());
           + fvm::div(alphaPhi1, U1)
           - fvm::Sp(fvc::ddt(alpha1) + fvc::div(alphaPhi1), U1)
           + phase1.turbulence().divDevReff(U1)
-          + dpCont
          ==
           - fvm::Sp(dragCoeff/rho1, U1)
           - alpha1*alpha2/rho1
@@ -70,7 +69,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
            *(
                 fvm::ddt(U1)
               + fvm::div(phi1, U1)
-              - fvm::Sp(fvc::div(phi1), U1)
+              - fvm::Sp(fvc::div(phi2), U1)
               - DDtU2
             )
         );
@@ -117,7 +116,14 @@ volScalarField dragCoeff(fluid.dragCoeff());
             dp = dp * 0.0;
         }
 	
-	volVectorField& F(KM.collisionalF(alphaPhi2));
+        surfaceScalarField phiRel
+            (
+                "phiRel",
+                fvc::interpolate(KM.velocity() * alpha2) & mesh.Sf()
+            );
+        //volVectorField& F(KM.collisionalF(alphaPhi2));
+        volVectorField& F(KM.collisionalF(phiRel));
+        
 	//volScalarField FSp(KM.collisionalSp(alphaPhi2));
         KM.print();
 

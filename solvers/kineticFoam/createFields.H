@@ -131,7 +131,7 @@
     volScalarField K2(IOobject::groupName("K", phase2.name()), 0.5*magSqr(U2));
 
     Info << "Creating kinetic model class\n" << endl;
-    kineticFluidModel KM(fluid);
+    kineticFluidModel KM(fluid, g);
 
     volVectorField dp
     (
