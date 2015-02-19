@@ -1143,7 +1143,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     F_total_ = f1 + f6;
     if(useG_)
     {
-        F_total_ += (f2 + f5 + f4 + f3);
+        F_total_ -= (f2 + f5 + f4 + f3);
     }
     F_total_ *= scaleF_;
 
