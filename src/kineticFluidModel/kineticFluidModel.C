@@ -1161,7 +1161,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
         //F_total_[celli].z() = 0.0f;
     }
 
-    volVectorField F0("F0", F_total_);
+
 
 
     if(developmentLength_)
@@ -1183,7 +1183,6 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
 
             if(coord < developmentL2_ && coord > developmentL1_)
             {
-                F0[celli] *= dampingFunction[celli];
                 F_total_[celli] *= dampingFunction[celli];
             }
         }
@@ -1206,7 +1205,6 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                         forAll(curPatch, facei)
                         {
                                 label faceCelli = curPatch.faceCells()[facei];
-                                F0[faceCelli] = vector(0, 0, 0);
                                 F_total_[faceCelli] = vector(0, 0, 0);
                                 //scalar count = 1.0;
                                 //forAll(mesh_.cellCells()[faceCelli], cellj)
@@ -1218,21 +1216,6 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
                                 /*F_total_[faceCelli] /= count;*/
                         }
                 }
-        }
-    }
-
-    if(forceSmoothing_)
-    {
-        forAll(mesh_.C(), celli)
-        {
-                scalar count = 1.0;
-                forAll(mesh_.cellCells()[celli], cellj)
-                {
-                    label n_id = mesh_.cellCells()[celli][cellj];
-                    count += 1.0;
-                    F_total_[celli] += F0[n_id];
-                }
-                F_total_[celli] /= count;
         }
     }
 
@@ -1307,6 +1290,24 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
             }
         }
     }
+
+    if(forceSmoothing_)
+    {
+        volVectorField F0("F0", F_total_);
+
+        forAll(mesh_.C(), celli)
+        {
+                scalar count = 1.0;
+                forAll(mesh_.cellCells()[celli], cellj)
+                {
+                    label n_id = mesh_.cellCells()[celli][cellj];
+                    count += 1.0;
+                    F_total_[celli] += F0[n_id];
+                }
+                F_total_[celli] /= count;
+        }
+    }
+
 
     F_total_.correctBoundaryConditions();
     return F_total_;
