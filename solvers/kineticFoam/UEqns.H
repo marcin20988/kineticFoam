@@ -109,7 +109,7 @@ volScalarField dragCoeff(fluid.dragCoeff());
 	//volVectorField dp(2.0 / 3.0 * fvc::grad(X2 * k * alpha2));
         if(KM.dp())
         {
-            dp = 2.0 / 3.0 * fvc::grad(X2 * k * alpha2);
+            dp = alpha2 * 2.0 / 3.0 * fvc::grad(X2 * k, "dp");
             dp.correctBoundaryConditions();
         }else
         {
