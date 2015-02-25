@@ -844,8 +844,8 @@ tmp<volVectorField> kineticFluidModel::F1(surfaceScalarField& phi) const
 
 tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
 {
-	const volVectorField U = velocity();//dispersedPhase().U();//velocity();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	const volVectorField U("U_km",velocity());//dispersedPhase().U();//velocity();
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 
 	const volScalarField rad = g0();
 
@@ -885,6 +885,7 @@ tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
                     * g0() * x
                 );
             x2.write();
+            U.write();
         }
 
 
@@ -1143,7 +1144,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     F_total_ = f1 + f6;
     if(useG_)
     {
-        F_total_ -= (f2 + f5 + f4 + f3);
+        F_total_ += (f2 + f5 + f4 + f3);
     }
     F_total_ *= scaleF_;
 
