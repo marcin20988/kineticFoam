@@ -593,18 +593,19 @@ tmp<volScalarField> kineticFluidModel::J3() const
 
         forAll(mesh_.C(), celli)
         {
-            if(a[celli] > 0.7)
-            {
-                j3[celli] += j3Erf[celli];
-            }
-            else if(a[celli] > 0.1)
-            {
-                j3[celli] += j3Erf[celli] * a[celli];
-            }
-            else
-            {
-                j3[celli] = 0.0;
-            }
+            j3[celli] += j3Erf[celli] * erf(a[celli]);
+/*            if(a[celli] > 0.7)*/
+            //{
+                //j3[celli] += j3Erf[celli];
+            //}
+            //else if(a[celli] > 0.1)
+            //{
+                //j3[celli] += j3Erf[celli] * a[celli];
+            //}
+            //else
+            //{
+                //j3[celli] = 0.0;
+            /*}*/
         }
 
         //j3 = min(j3, scalar(0));
@@ -636,18 +637,19 @@ tmp<volScalarField> kineticFluidModel::J4() const
 
         forAll(mesh_.C(), celli)
         {
-            if(a[celli] > 0.7)
-            {
-                j4[celli] += j4Erf[celli];
-            }
-            else if(a[celli] > 0.1)
-            {
-                j4[celli] += j4Erf[celli] * a[celli];
-            }
-            else
-            {
-                j4[celli] = 0.0;
-            }
+            j4 += j4Erf * erf(a[celli]);
+            /*if(a[celli] > 0.7)*/
+            //{
+                //j4[celli] += j4Erf[celli];
+            //}
+            //else if(a[celli] > 0.1)
+            //{
+                //j4[celli] += j4Erf[celli] * a[celli];
+            //}
+            //else
+            //{
+                //j4[celli] = 0.0;
+            /*}*/
         }
         //j4 = min(j4, scalar(0));
 
@@ -747,6 +749,14 @@ tmp<volVectorField> kineticFluidModel::deltaG()
         volVectorField g3("g_T", g_T * fvc::grad(logT));
         volVectorField g4("g_tau", g_tau * fvc::grad(tau));
         volVectorField g5("g_cd", g_cd * fvc::grad(cd));
+        if(mesh_.time().outputTime())
+        {
+            g1.write();
+            g2.write();
+            g3.write();
+            g4.write();
+            g5.write();
+        }
 
 	//Info << "g-eps: " 
 		//<< g1.weightedAverage(g_alpha.mesh().V()).value()
@@ -909,7 +919,7 @@ tmp<volVectorField> kineticFluidModel::F2(surfaceScalarField& phi) const
 tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
 {
 	const volVectorField U = velocity();//dispersedPhase().U();//velocity();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-02);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 	volScalarField j3("J3", J3());
 
 	volVectorField x
@@ -929,7 +939,7 @@ tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
                 vector(epsilonF, epsilonF, epsilonF)
             );
 
-	return fvc::div(phi, x) / (mag(U) + smallU);
+	return fvc::div(phi, x, "F3") / (mag(U) + smallU);
             //+
             //fvc::laplacian
             //( 
@@ -941,7 +951,7 @@ tmp<volVectorField> kineticFluidModel::F3(surfaceScalarField& phi) const
 tmp<volVectorField> kineticFluidModel::F4(surfaceScalarField& phi) const
 {
 	const volVectorField U = velocity();//dispersedPhase().U();//velocity();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-02);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 	volScalarField j3("J3", J3());
 
         volVectorField x
@@ -961,7 +971,7 @@ tmp<volVectorField> kineticFluidModel::F4(surfaceScalarField& phi) const
                 vector(epsilonF, epsilonF, epsilonF)
             );
 
-        return fvc::div(x) * U / (mag(U) + smallU);
+        return fvc::div(x, "F4") * U / (mag(U) + smallU);
             //+
             //fvc::laplacian
             //( 
@@ -993,7 +1003,7 @@ tmp<volScalarField> kineticFluidModel::F4Sp(surfaceScalarField& phi) const
 tmp<volVectorField> kineticFluidModel::F5(surfaceScalarField& phi) const
 {
 	const volVectorField U = velocity();//dispersedPhase().U();//velocity();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 	volScalarField j3 = J3();
 	volScalarField j4 = J4();
 
@@ -1053,7 +1063,7 @@ tmp<volScalarField> kineticFluidModel::F5Sp(surfaceScalarField& phi) const
 tmp<volVectorField> kineticFluidModel::F6(surfaceScalarField& phi) const
 {
 	const volVectorField U = velocity();
-	dimensionedScalar smallU("smallU", U.dimensions(), 1e-03);
+	dimensionedScalar smallU("smallU", U.dimensions(), 1e-08);
 	volScalarField j1 = J1();
 	volScalarField j2 = J2();
 
@@ -1144,7 +1154,7 @@ volVectorField& kineticFluidModel::collisionalF(surfaceScalarField& phi)
     F_total_ = f1 + f6;
     if(useG_)
     {
-        F_total_ += (f2 + f5 + f4 + f3);
+        F_total_ -= (f2 + f5 + f4 + f3);
     }
     F_total_ *= scaleF_;
 
